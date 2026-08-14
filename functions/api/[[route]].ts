@@ -16,16 +16,18 @@ type Bindings = {
 const app = new Hono<{ Bindings: Bindings }>()
 
 const ADMIN_DISCORD_ID = '1339570380943261697';
-const REDIRECT_URI = 'https://selfdash.pages.dev/api/auth/callback';
 
 app.get('/api/auth/login', (c) => {
-  const discordAuthUrl = `https://discord.com/api/oauth2/authorize?client_id=${c.env.APPLICATION_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=identify`;
+  const redirectUri = `${new URL(c.req.url).origin}/api/auth/callback`;
+  const discordAuthUrl = `https://discord.com/api/oauth2/authorize?client_id=${c.env.APPLICATION_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=identify`;
   return c.redirect(discordAuthUrl);
 });
 
 app.get('/api/auth/callback', async (c) => {
   const code = c.req.query('code');
   if (!code) return c.json({ error: 'No code provided' }, 400);
+
+  const redirectUri = `${new URL(c.req.url).origin}/api/auth/callback`;
 
   const tokenResponse = await fetch('https://discord.com/api/oauth2/token', {
     method: 'POST',
@@ -35,7 +37,7 @@ app.get('/api/auth/callback', async (c) => {
       client_secret: c.env.DISCORD_CLIENT_SECRET || '',
       grant_type: 'authorization_code',
       code,
-      redirect_uri: REDIRECT_URI,
+      redirect_uri: redirectUri,
     })
   });
 
