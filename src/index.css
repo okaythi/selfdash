@@ -1,0 +1,142 @@
+@import url('https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&display=swap');
+
+:root {
+  --dash-bg: #000000;
+  --dash-surface: #111111;
+  --dash-border: #333333;
+  --dash-accent: #F38020;
+  --dash-text: #EDEDED;
+  --dash-muted: #888888;
+  --discord-bg: #111214;
+  --discord-surface: #313338;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Ubuntu', sans-serif;
+  background-color: var(--dash-bg);
+  color: var(--dash-text);
+  overflow: hidden;
+}
+
+.dashboard-layout {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+}
+
+.sidebar {
+  width: 250px;
+  background-color: var(--dash-surface);
+  border-right: 1px solid var(--dash-border);
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+}
+
+.sidebar-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 30px;
+  color: var(--dash-accent);
+}
+
+.nav-item {
+  padding: 10px 15px;
+  margin-bottom: 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nav-item:hover {
+  background-color: var(--dash-border);
+}
+
+.nav-item.active {
+  background-color: var(--dash-border);
+  color: var(--dash-accent);
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--dash-bg);
+}
+
+.header {
+  height: 60px;
+  border-bottom: 1px solid var(--dash-border);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  justify-content: space-between;
+}
+
+.header-stats {
+  display: flex;
+  gap: 20px;
+  font-size: 0.9rem;
+  color: var(--dash-muted);
+}
+
+.content-area {
+  flex: 1;
+  padding: 30px;
+  overflow-y: auto;
+}
+
+/* Discord Replica Styles */
+.discord-replica-container {
+  font-family: 'gg sans', 'Inter', sans-serif;
+  background-color: var(--discord-bg);
+  border-radius: 8px;
+  overflow: hidden;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.discord-profile-banner {
+  height: 120px;
+  background-color: var(--dash-accent);
+}
+
+.discord-profile-avatar-wrapper {
+  position: relative;
+  margin-top: -60px;
+  margin-left: 20px;
+}
+
+.discord-profile-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 6px solid var(--discord-bg);
+  background-color: #222;
+}
+
+.discord-profile-info {
+  padding: 20px;
+  background-color: var(--discord-bg);
+}
+
+.discord-username {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #FFF;
+}
+
+.discord-bio {
+  margin-top: 10px;
+  color: #DBDEE1;
+  font-size: 0.95rem;
+}

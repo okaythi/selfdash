@@ -1,0 +1,8 @@
+name = "selfdash"
+compatibility_date = "2026-08-14"
+pages_build_output_dir = "dist"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "selfdash-db"
+database_id = "4b637b18-abcd-46a0-87f9-88700620164c"
