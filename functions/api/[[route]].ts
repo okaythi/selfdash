@@ -19,6 +19,11 @@ const ADMIN_DISCORD_ID = '1339570380943261697';
 
 app.get('/api/auth/login', (c) => {
   const redirectUri = `${new URL(c.req.url).origin}/api/auth/callback`;
+  
+  if (!c.env.APPLICATION_ID) {
+    return c.text(`Error: APPLICATION_ID is undefined in this Cloudflare environment. Available env keys: ${Object.keys(c.env).join(', ')}`);
+  }
+
   const discordAuthUrl = `https://discord.com/api/oauth2/authorize?client_id=${c.env.APPLICATION_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=identify`;
   return c.redirect(discordAuthUrl);
 });
