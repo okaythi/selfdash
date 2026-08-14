@@ -66,7 +66,7 @@ app.get('/api/auth/callback', async (c) => {
   setCookie(c, 'session', token, {
     httpOnly: true,
     secure: true,
-    sameSite: 'Strict',
+    sameSite: 'Lax',
     maxAge: 60 * 60 * 24,
     path: '/'
   });
