@@ -1,11 +1,17 @@
 import { Hash, Search, Bell, Pin, Users } from 'lucide-react';
+import useSWR from 'swr';
+
+const fetcher = (url: string) => fetch(url).then(r => r.json());
 
 export function ChannelVisualizer() {
-  const messages = [
-    { id: 1, author: 'SomeUser', color: '#1abc9c', avatar: 'https://cdn.discordapp.com/embed/avatars/1.png', time: 'Today at 20:41', content: 'Did the bot restart?' },
-    { id: 2, author: 'GewoonThy', color: '#e91e63', avatar: 'https://cdn.discordapp.com/embed/avatars/0.png', time: 'Today at 20:42', content: 'Restarted. Online again!', isBot: true },
-    { id: 3, author: 'SomeUser', color: '#1abc9c', avatar: 'https://cdn.discordapp.com/embed/avatars/1.png', time: 'Today at 20:42', content: 'Ah nice, the notification worked.' },
-  ];
+  const { data: stateData } = useSWR('/api/state', fetcher, { refreshInterval: 1890 });
+  
+  const getVal = (k: string) => {
+    const item = stateData?.find((s: any) => s.key === k);
+    return item ? JSON.parse(item.value) : null;
+  };
+
+  const messages = getVal('bot_recent_messages') || [];
 
   return (
     <div className="module-card no-pad" style={{ height: '500px', display: 'flex', flexDirection: 'column' }}>
@@ -28,7 +34,8 @@ export function ChannelVisualizer() {
 
       {/* Discord Chat Replica */}
       <div className="discord-chat-area">
-        {messages.map(msg => (
+        {messages.length === 0 && <div style={{ color: '#aaa', textAlign: 'center', marginTop: '20px' }}>No messages loaded.</div>}
+        {messages.map((msg: any) => (
           <div key={msg.id} className="discord-message">
             <img src={msg.avatar} alt="Avatar" className="discord-msg-avatar" />
             <div className="discord-msg-content">

@@ -1,27 +1,42 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Terminal, Play, Loader2 } from 'lucide-react';
+import useSWR from 'swr';
+
+const fetcher = (url: string) => fetch(url).then(r => r.json());
 
 export function CommandRunner() {
   const [command, setCommand] = useState('');
-  const [history, setHistory] = useState<{ id: string; cmd: string; output: string; status: 'success' | 'error' | 'running' }[]>([
-    { id: '1', cmd: '.ping', output: 'Pong! 24ms', status: 'success' },
-    { id: '2', cmd: '.uptime', output: 'Uptime: 2 days, 4 hours', status: 'success' }
-  ]);
+  const { data: stateData } = useSWR('/api/state', fetcher, { refreshInterval: 1890 });
+  const [history, setHistory] = useState<{ id: string; cmd: string; output: string; status: 'success' | 'error' | 'running' }[]>([]);
 
-  const handleRun = () => {
+  // Update history from state if the bot pushes console history
+  useEffect(() => {
+    if (stateData) {
+      const histItem = stateData.find((s: any) => s.key === 'bot_console_history');
+      if (histItem) {
+        setHistory(JSON.parse(histItem.value));
+      }
+    }
+  }, [stateData]);
+
+  const handleRun = async () => {
     if (!command.trim()) return;
     const newCmd = { id: Date.now().toString(), cmd: command, output: '', status: 'running' as const };
     setHistory([...history, newCmd]);
+    const cmdText = command;
     setCommand('');
 
-    // Simulate execution latency
-    setTimeout(() => {
+    try {
+      await fetch('/api/queue-command', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: { type: 'shell', text: cmdText, id: newCmd.id } })
+      });
+    } catch (e) {
       setHistory(prev => prev.map(item => 
-        item.id === newCmd.id 
-          ? { ...item, status: 'success', output: 'Command sent to selfbot via D1 polling.' } 
-          : item
+        item.id === newCmd.id ? { ...item, status: 'error', output: 'Failed to queue command' } : item
       ));
-    }, 1500);
+    }
   };
 
   return (
@@ -32,6 +47,7 @@ export function CommandRunner() {
       </div>
       
       <div className="console-history">
+        {history.length === 0 && <div style={{ color: '#555' }}>No commands executed yet.</div>}
         {history.map((item) => (
           <div key={item.id} className="console-entry">
             <div className="console-cmd">

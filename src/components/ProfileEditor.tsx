@@ -1,12 +1,50 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import useSWR from 'swr';
+
+const fetcher = (url: string) => fetch(url).then(r => r.json());
 
 export function ProfileEditor() {
+  const { data: stateData } = useSWR('/api/state', fetcher, { refreshInterval: 1890 });
+  
+  const getVal = (k: string) => {
+    const item = stateData?.find((s: any) => s.key === k);
+    return item ? JSON.parse(item.value) : null;
+  };
+
   const [profile, setProfile] = useState({
-    username: 'GewoonThy',
-    bio: 'Professional Discord Bot.\nPlaying around with Cloudflare.',
-    bannerColor: '#F38020',
+    username: 'Loading...',
+    bio: '',
+    bannerColor: '#000000',
     avatarUrl: 'https://cdn.discordapp.com/embed/avatars/0.png'
   });
+
+  useEffect(() => {
+    if (stateData) {
+      setProfile(p => ({
+        ...p,
+        username: getVal('bot_username') || p.username,
+        bio: getVal('bot_bio') || p.bio,
+        bannerColor: getVal('bot_banner_color') || p.bannerColor,
+        avatarUrl: getVal('bot_pfp') || p.avatarUrl
+      }));
+    }
+  }, [stateData]);
+
+  const handleSave = async () => {
+    await fetch('/api/queue-command', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        command: { 
+          type: 'update_profile', 
+          username: profile.username,
+          bio: profile.bio,
+          bannerColor: profile.bannerColor
+        } 
+      })
+    });
+    alert("Profile update command queued.");
+  };
 
   return (
     <div style={{ display: 'flex', gap: '30px' }}>
@@ -38,7 +76,7 @@ export function ProfileEditor() {
             style={{ width: '100%', padding: '5px', background: 'var(--dash-surface)', border: '1px solid var(--dash-border)', marginTop: '5px' }}
           />
         </div>
-        <button className="btn-primary" style={{ marginTop: '20px', padding: '10px 20px' }}>Save Changes</button>
+        <button className="btn-primary" style={{ marginTop: '20px', padding: '10px 20px' }} onClick={handleSave}>Save Changes</button>
       </div>
 
       <div style={{ flex: 1 }}>

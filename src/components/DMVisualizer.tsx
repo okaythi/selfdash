@@ -1,10 +1,17 @@
 import { Search, Phone, Video, Pin, UserPlus } from 'lucide-react';
+import useSWR from 'swr';
+
+const fetcher = (url: string) => fetch(url).then(r => r.json());
 
 export function DMVisualizer() {
-  const messages = [
-    { id: 1, author: 'SomeFriend', color: '#3498db', avatar: 'https://cdn.discordapp.com/embed/avatars/2.png', time: 'Yesterday at 15:30', content: 'Hey, is the bot working?' },
-    { id: 2, author: 'GewoonThy', color: '#e91e63', avatar: 'https://cdn.discordapp.com/embed/avatars/0.png', time: 'Yesterday at 15:31', content: 'Yeah, testing the new Cloudflare dashboard bridge right now.', isBot: true },
-  ];
+  const { data: stateData } = useSWR('/api/state', fetcher, { refreshInterval: 1890 });
+  
+  const getVal = (k: string) => {
+    const item = stateData?.find((s: any) => s.key === k);
+    return item ? JSON.parse(item.value) : null;
+  };
+
+  const messages = getVal('bot_recent_dms') || [];
 
   return (
     <div className="module-card no-pad" style={{ height: '500px', display: 'flex', flexDirection: 'column' }}>
@@ -14,7 +21,7 @@ export function DMVisualizer() {
             <img src="https://cdn.discordapp.com/embed/avatars/2.png" alt="User" style={{ width: 24, height: 24, borderRadius: '50%' }} />
             <div style={{ position: 'absolute', bottom: -2, right: -2, width: 10, height: 10, backgroundColor: '#23A559', borderRadius: '50%', border: '2px solid #313338' }}></div>
           </div>
-          SomeFriend
+          Recent DMs
         </div>
         <div className="discord-header-icons">
           <Phone size={20} />
@@ -29,7 +36,8 @@ export function DMVisualizer() {
       </div>
 
       <div className="discord-chat-area">
-        {messages.map(msg => (
+        {messages.length === 0 && <div style={{ color: '#aaa', textAlign: 'center', marginTop: '20px' }}>No DMs loaded.</div>}
+        {messages.map((msg: any) => (
           <div key={msg.id} className="discord-message">
             <img src={msg.avatar} alt="Avatar" className="discord-msg-avatar" />
             <div className="discord-msg-content">
@@ -46,7 +54,7 @@ export function DMVisualizer() {
 
       <div className="discord-input-wrapper">
         <div className="discord-input">
-          Message @SomeFriend
+          Message
         </div>
       </div>
     </div>
