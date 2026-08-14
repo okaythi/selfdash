@@ -94,7 +94,7 @@ const dashboardAuth = async (c: any, next: any) => {
   const token = getCookie(c, 'session');
   if (!token) return c.json({ error: 'Unauthorized' }, 401);
   try {
-    const decoded = await verify(token, c.env.JWT_SECRET || 'fallback_secret_change_me');
+    const decoded = await verify(token, c.env.JWT_SECRET || 'fallback_secret_change_me', 'HS256');
     if (decoded.id !== ADMIN_DISCORD_ID) throw new Error('Invalid ID');
     await next();
   } catch (e) {
