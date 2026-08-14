@@ -10,15 +10,13 @@ type Bindings = {
   APPLICATION_ID: string
   DISCORD_CLIENT_SECRET: string
   JWT_SECRET: string
-  API_TOKEN: string // For bot authentication
+  API_TOKEN: string
 }
 
 const app = new Hono<{ Bindings: Bindings }>()
 
 const ADMIN_DISCORD_ID = '1339570380943261697';
-const REDIRECT_URI = 'https://selfdash.pages.dev/api/auth/callback'; // Configure in Discord Dev Portal
-
-// --- AUTHENTICATION ---
+const REDIRECT_URI = 'https://selfdash.pages.dev/api/auth/callback';
 
 app.get('/api/auth/login', (c) => {
   const discordAuthUrl = `https://discord.com/api/oauth2/authorize?client_id=${c.env.APPLICATION_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=identify`;
@@ -29,13 +27,12 @@ app.get('/api/auth/callback', async (c) => {
   const code = c.req.query('code');
   if (!code) return c.json({ error: 'No code provided' }, 400);
 
-  // Exchange code for token
   const tokenResponse = await fetch('https://discord.com/api/oauth2/token', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({
       client_id: c.env.APPLICATION_ID,
-      client_secret: c.env.DISCORD_CLIENT_SECRET || '', // User needs to configure this secret
+      client_secret: c.env.DISCORD_CLIENT_SECRET || '',
       grant_type: 'authorization_code',
       code,
       redirect_uri: REDIRECT_URI,
@@ -45,7 +42,6 @@ app.get('/api/auth/callback', async (c) => {
   if (!tokenResponse.ok) return c.json({ error: 'Failed to exchange token' }, 400);
   const tokenData = await tokenResponse.json();
 
-  // Fetch user info
   const userResponse = await fetch('https://discord.com/api/users/@me', {
     headers: { Authorization: `Bearer ${tokenData.access_token}` }
   });
@@ -53,21 +49,18 @@ app.get('/api/auth/callback', async (c) => {
   if (!userResponse.ok) return c.json({ error: 'Failed to fetch user info' }, 400);
   const userData = await userResponse.json();
 
-  // strict authorization
   if (userData.id !== ADMIN_DISCORD_ID) {
     return c.json({ error: 'Unauthorized user. Go away.' }, 403);
   }
 
-  // Create JWT
   const payload = {
     id: userData.id,
     username: userData.username,
-    exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 // 24 hour expiration
+    exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24
   };
   
   const token = await sign(payload, c.env.JWT_SECRET || 'fallback_secret_change_me');
 
-  // Set secure HTTP-only cookie
   setCookie(c, 'session', token, {
     httpOnly: true,
     secure: true,
@@ -95,9 +88,6 @@ app.get('/api/auth/logout', (c) => {
   return c.json({ success: true });
 });
 
-// --- MIDDLEWARE ---
-
-// Protect dashboard API routes
 const dashboardAuth = async (c: any, next: any) => {
   const token = getCookie(c, 'session');
   if (!token) return c.json({ error: 'Unauthorized' }, 401);
@@ -110,7 +100,6 @@ const dashboardAuth = async (c: any, next: any) => {
   }
 }
 
-// Protect bot API routes
 const botAuth = async (c: any, next: any) => {
   const authHeader = c.req.header('Authorization');
   if (!authHeader || authHeader !== `Bearer ${c.env.API_TOKEN || 'SUPER_SECRET_TOKEN'}`) {
@@ -119,16 +108,12 @@ const botAuth = async (c: any, next: any) => {
   await next();
 }
 
-// --- PROTECTED ROUTES ---
-
-// Fetch current state (Dashboard)
 app.get('/api/state', dashboardAuth, async (c) => {
   const db = drizzle(c.env.DB)
   const allState = await db.select().from(state).all()
   return c.json(allState)
 })
 
-// Queue command (Dashboard)
 app.post('/api/queue-command', dashboardAuth, async (c) => {
   const db = drizzle(c.env.DB)
   const body = await c.req.json()
@@ -145,7 +130,6 @@ app.post('/api/queue-command', dashboardAuth, async (c) => {
   return c.json({ success: true })
 })
 
-// Push new state (Bot)
 app.post('/api/push-state', botAuth, async (c) => {
   const db = drizzle(c.env.DB)
   const body = await c.req.json()
@@ -165,7 +149,6 @@ app.post('/api/push-state', botAuth, async (c) => {
   return c.json({ success: true })
 })
 
-// Poll commands (Bot)
 app.get('/api/poll-commands', botAuth, async (c) => {
   const db = drizzle(c.env.DB)
   const pending = await db.select().from(commands_queue)
