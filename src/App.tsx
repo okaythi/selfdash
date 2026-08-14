@@ -22,7 +22,7 @@ function App() {
     return (
       <div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center', backgroundColor: '#000' }}>
         <div style={{ textAlign: 'center' }}>
-          <h1 style={{ color: 'white', marginBottom: '20px' }}>Selfdash Login</h1>
+          <h1 style={{ color: 'white', marginBottom: '20px' }}>Login</h1>
           <a href="/api/auth/login" style={{ backgroundColor: '#5865F2', color: 'white', padding: '12px 24px', textDecoration: 'none', borderRadius: '4px', fontWeight: 'bold' }}>Login with Discord</a>
         </div>
       </div>
