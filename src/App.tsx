@@ -7,10 +7,12 @@ import { CommandRunner } from './components/CommandRunner';
 import { ChannelVisualizer } from './components/ChannelVisualizer';
 import { DMVisualizer } from './components/DMVisualizer';
 
-const fetcher = (url: string) => fetch(url).then(r => {
-  if (!r.ok) throw new Error('Not auth');
-  return r.json();
-});
+const fetcher = async (url: string) => {
+  const r = await fetch(url);
+  const data = await r.json();
+  if (!r.ok) throw new Error(JSON.stringify(data));
+  return data;
+};
 
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -24,6 +26,7 @@ function App() {
         <div style={{ textAlign: 'center' }}>
           <h1 style={{ color: 'white', marginBottom: '20px' }}>Login</h1>
           <a href="/api/auth/login" style={{ backgroundColor: '#5865F2', color: 'white', padding: '12px 24px', textDecoration: 'none', borderRadius: '4px', fontWeight: 'bold' }}>Login with Discord</a>
+          {error && <div style={{ marginTop: '20px', color: '#ED4245', fontFamily: 'monospace' }}>Error: {error.message}</div>}
         </div>
       </div>
     );

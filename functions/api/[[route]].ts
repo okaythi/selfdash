@@ -76,12 +76,12 @@ app.get('/api/auth/callback', async (c) => {
 
 app.get('/api/auth/me', async (c) => {
   const token = getCookie(c, 'session');
-  if (!token) return c.json({ user: null }, 401);
+  if (!token) return c.json({ user: null, debug_reason: 'no_cookie_found' }, 401);
   try {
     const decoded = await verify(token, c.env.JWT_SECRET || 'fallback_secret_change_me');
     return c.json({ user: decoded });
   } catch (e) {
-    return c.json({ user: null }, 401);
+    return c.json({ user: null, debug_reason: 'jwt_verify_failed', debug_error: String(e) }, 401);
   }
 });
 
