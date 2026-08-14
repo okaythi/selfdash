@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 export function ProfileEditor() {
   const [profile, setProfile] = useState({
@@ -38,7 +38,7 @@ export function ProfileEditor() {
             style={{ width: '100%', padding: '5px', background: 'var(--dash-surface)', border: '1px solid var(--dash-border)', marginTop: '5px' }}
           />
         </div>
-        <button style={{ marginTop: '20px', background: 'var(--dash-accent)', color: '#fff', padding: '10px 20px', border: 'none', cursor: 'pointer', borderRadius: '4px' }}>Save Changes</button>
+        <button className="btn-primary" style={{ marginTop: '20px', padding: '10px 20px' }}>Save Changes</button>
       </div>
 
       <div style={{ flex: 1 }}>

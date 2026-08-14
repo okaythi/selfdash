@@ -1,7 +1,4 @@
-import React from 'react';
-
 export function Header() {
-  // Mock data for now, will connect to API later
   const time = new Date().toLocaleTimeString('en-BE', { timeZone: 'Europe/Brussels' });
 
   return (

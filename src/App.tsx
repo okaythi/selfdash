@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { ProfileEditor } from './components/ProfileEditor';
+import { CommandRunner } from './components/CommandRunner';
+import { ChannelVisualizer } from './components/ChannelVisualizer';
+import { DMVisualizer } from './components/DMVisualizer';
 
 function App() {
   const [activeTab, setActiveTab] = useState('profile');
@@ -12,10 +15,10 @@ function App() {
       <div className="main-content">
         <Header />
         <div className="content-area">
+          {activeTab === 'dashboard' && <ChannelVisualizer />}
           {activeTab === 'profile' && <ProfileEditor />}
-          {activeTab === 'dashboard' && <h2>Dashboard Overview</h2>}
-          {activeTab === 'messages' && <h2>Messages Module (Coming Soon)</h2>}
-          {activeTab === 'console' && <h2>Command Console (Coming Soon)</h2>}
+          {activeTab === 'messages' && <DMVisualizer />}
+          {activeTab === 'console' && <CommandRunner />}
         </div>
       </div>
     </div>
