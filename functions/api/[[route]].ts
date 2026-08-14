@@ -41,8 +41,8 @@ app.get('/api/auth/callback', async (c) => {
     })
   });
 
-  if (!tokenResponse.ok) return c.json({ error: 'Failed to exchange token' }, 400);
   const tokenData = await tokenResponse.json();
+  if (!tokenResponse.ok) return c.json({ error: 'Failed to exchange token', discord_error: tokenData }, 400);
 
   const userResponse = await fetch('https://discord.com/api/users/@me', {
     headers: { Authorization: `Bearer ${tokenData.access_token}` }
