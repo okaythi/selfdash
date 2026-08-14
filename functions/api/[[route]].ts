@@ -104,7 +104,8 @@ const dashboardAuth = async (c: any, next: any) => {
 
 const botAuth = async (c: any, next: any) => {
   const authHeader = c.req.header('Authorization');
-  if (!authHeader || authHeader !== `Bearer ${c.env.API_TOKEN || 'SUPER_SECRET_TOKEN'}`) {
+  const expectedToken = c.env.API_TOKEN || c.env.TOKEN || 'SUPER_SECRET_TOKEN';
+  if (!authHeader || authHeader !== `Bearer ${expectedToken}`) {
     return c.json({ error: 'Unauthorized bot token' }, 401);
   }
   await next();
