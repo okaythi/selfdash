@@ -122,25 +122,52 @@ export function OAuthVisualizer() {
               }} 
             />
             <div style={{ position: 'relative', marginTop: '-60px', padding: '0 20px' }}>
-              <img 
-                src={renderAvatar(user)} 
-                alt="Avatar" 
-                style={{ width: '120px', height: '120px', borderRadius: '50%', border: '6px solid var(--discord-bg)', backgroundColor: '#222' }} 
-              />
+              <div style={{ position: 'relative', width: '120px', height: '120px' }}>
+                <img 
+                  src={renderAvatar(user)} 
+                  alt="Avatar" 
+                  style={{ width: '120px', height: '120px', borderRadius: '50%', border: '6px solid var(--discord-bg)', backgroundColor: '#222' }} 
+                />
+                {user.avatar_decoration_data?.asset && (
+                  <img 
+                    src={`https://cdn.discordapp.com/avatar-decoration-presets/${user.avatar_decoration_data.asset}.png`}
+                    alt="Decoration"
+                    style={{ position: 'absolute', top: '-12px', left: '-12px', width: '144px', height: '144px', pointerEvents: 'none' }}
+                  />
+                )}
+              </div>
               <div style={{ padding: '15px 0 25px 0' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <div>
                     <h1 style={{ fontSize: '1.5rem', color: '#fff', margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
-                      {user.global_name || user.username}
-                      {user.clan && (
-                        <span style={{ fontSize: '0.8rem', backgroundColor: '#232428', padding: '2px 6px', borderRadius: '4px', border: '1px solid #3f4147', color: '#dbdee1' }}>
-                          [{user.clan.tag}]
-                        </span>
-                      )}
+                      <span style={
+                        user.display_name_styles?.colors?.length > 1 
+                          ? {
+                              background: `linear-gradient(90deg, ${user.display_name_styles.colors.map((c: number) => '#' + c.toString(16).padStart(6, '0')).join(', ')})`,
+                              WebkitBackgroundClip: 'text',
+                              WebkitTextFillColor: 'transparent',
+                            }
+                          : { color: user.display_name_styles?.colors?.[0] ? '#' + user.display_name_styles.colors[0].toString(16).padStart(6, '0') : '#fff' }
+                      }>
+                        {user.global_name || user.username}
+                      </span>
                     </h1>
-                    <p style={{ color: '#dbdee1', fontSize: '1rem', marginTop: 4 }}>
-                      {user.username}{user.discriminator !== '0' ? `#${user.discriminator}` : ''}
-                    </p>
+                    <div style={{ color: '#dbdee1', fontSize: '1rem', marginTop: 4, display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                      <span>{user.username}{user.discriminator !== '0' ? `#${user.discriminator}` : ''}</span>
+                      {user.pronouns && <span>• {user.pronouns}</span>}
+                      {user.clan && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: '#232428', padding: '2px 8px', borderRadius: '12px', border: '1px solid #3f4147' }}>
+                          {user.clan.badge && (
+                            <img 
+                              src={`https://cdn.discordapp.com/clan-badges/${user.clan.identity_guild_id}/${user.clan.badge}.png`} 
+                              alt="Clan Badge" 
+                              style={{ width: '16px', height: '16px', objectFit: 'contain' }} 
+                            />
+                          )}
+                          <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>{user.clan.tag}</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                   
                   <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'flex-end', maxWidth: '50%' }}>
