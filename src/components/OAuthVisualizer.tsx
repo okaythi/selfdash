@@ -240,11 +240,11 @@ export function OAuthVisualizer() {
                   
                   <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', justifyContent: 'flex-start', alignItems: 'center', marginTop: '4px' }}>
                     {getBadges(user).map((b, i) => (
-                      <div key={i} title={b.name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '22px', height: '22px' }}>
+                      <div key={i} title={b.name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '22px', height: '22px', minWidth: '22px', minHeight: '22px', flexShrink: 0 }}>
                         {b.src ? (
-                          <img src={b.src} alt={b.name} style={{ width: '22px', height: '22px', objectFit: 'contain' }} />
+                          <img src={b.src} alt={b.name} style={{ width: '22px', height: '22px', minWidth: '22px', minHeight: '22px', objectFit: 'contain', flexShrink: 0 }} />
                         ) : (
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: (b as any).color }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: (b as any).color, width: '22px', height: '22px', minWidth: '22px', minHeight: '22px', flexShrink: 0 }}>
                             {(b as any).icon}
                           </div>
                         )}
