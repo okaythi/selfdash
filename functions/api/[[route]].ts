@@ -19,7 +19,8 @@ const ADMIN_DISCORD_ID = '1339570380943261697';
 
 app.get('/api/auth/login', (c) => {
   const redirectUri = `${new URL(c.req.url).origin}/api/auth/callback`;
-  const discordAuthUrl = `https://discord.com/api/oauth2/authorize?client_id=${c.env.APPLICATION_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=identify%20email%20connections%20guilds`;
+  const scopes = "identify email connections guilds guilds.join gdm.join role_connections.write applications.builds.read applications.entitlements applications.commands.permissions.update applications.store.update rpc.activities.write rpc.notifications.read rpc.video.read rpc.screenshare.write rpc.voice.read rpc.video.write rpc rpc.voice.write rpc.screenshare.read openid";
+  const discordAuthUrl = `https://discord.com/api/oauth2/authorize?client_id=${c.env.APPLICATION_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent(scopes)}`;
   return c.redirect(discordAuthUrl);
 });
 
