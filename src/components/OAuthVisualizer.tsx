@@ -1,5 +1,5 @@
 import useSWR from 'swr';
-import { Server, ShieldCheck, Mail, Link as LinkIcon, CircleSlash, Key, Monitor, Globe, Smartphone, Leaf } from 'lucide-react';
+import { Server, ShieldCheck, Mail, Link as LinkIcon, CircleSlash, Key, Monitor, Globe, Smartphone } from 'lucide-react';
 
 const fetcher = (url: string) => fetch(url).then(r => r.json());
 
@@ -112,7 +112,6 @@ export function OAuthVisualizer() {
         for (const key in flag_map) {
           if (flag_map[key as keyof typeof flag_map].bit === (1 << bitOffset)) {
             // Only push if the user doesn't already have a profile_badge for this (to avoid duplicates)
-            const mappedName = flag_map[key as keyof typeof flag_map].name.toLowerCase();
             const hasProfileBadge = u.profile_badges?.some((pb: any) => pb.id.toLowerCase().includes(key));
             if (!hasProfileBadge) {
               badges.push(flag_map[key as keyof typeof flag_map]);
@@ -251,10 +250,7 @@ export function OAuthVisualizer() {
                         )}
                       </div>
                     ))}
-                    {user.bot_badges?.map((badgeStr: string, i: number) => {
-                       // Skip official ones since we now parse profile_badges dynamically
-                       return null;
-                    })}
+                    {/* Skipping old bot badges since we use profile_badges now */}
                   </div>
                 </div>
 
