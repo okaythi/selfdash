@@ -14,8 +14,9 @@ export function ProfileEditor() {
     return item ? JSON.parse(item.value) : null;
   };
 
+  const [hasInitialized, setHasInitialized] = useState(false);
   const [profile, setProfile] = useState({
-    username: 'Loading...',
+    displayName: 'Loading...',
     bio: '',
     bannerColor: '#000000',
     accentColor: '#000000',
@@ -25,10 +26,10 @@ export function ProfileEditor() {
   });
 
   useEffect(() => {
-    if (stateData) {
+    if (stateData && !hasInitialized) {
       setProfile(p => ({
         ...p,
-        username: getVal('bot_username') || p.username,
+        displayName: getVal('bot_display_name') || p.displayName,
         bio: getVal('bot_bio') || p.bio,
         bannerColor: getVal('bot_banner_color') || p.bannerColor,
         accentColor: getVal('bot_accent_color') || p.accentColor,
@@ -36,8 +37,9 @@ export function ProfileEditor() {
         bannerUrl: getVal('bot_banner') || p.bannerUrl,
         status: getVal('bot_status') || p.status
       }));
+      setHasInitialized(true);
     }
-  }, [stateData]);
+  }, [stateData, hasInitialized]);
 
   const handleSave = async () => {
     await fetch('/api/queue-command', {
@@ -46,7 +48,7 @@ export function ProfileEditor() {
       body: JSON.stringify({ 
         command: { 
           type: 'update_profile', 
-          username: profile.username,
+          displayName: profile.displayName,
           bio: profile.bio,
           bannerColor: profile.bannerColor,
           accentColor: profile.accentColor,
@@ -124,11 +126,11 @@ export function ProfileEditor() {
         </div>
 
         <div className="input-group" style={{ marginTop: '15px' }}>
-          <label>Username</label>
+          <label>Display Name</label>
           <input 
             type="text" 
-            value={profile.username} 
-            onChange={e => setProfile({...profile, username: e.target.value})} 
+            value={profile.displayName} 
+            onChange={e => setProfile({...profile, displayName: e.target.value})} 
             style={{ width: '100%', padding: '10px', background: 'var(--dash-surface)', border: '1px solid var(--dash-border)', color: 'white', marginTop: '5px' }}
           />
         </div>
@@ -236,7 +238,7 @@ export function ProfileEditor() {
           </div>
           
           <div className="discord-profile-info" style={{ padding: '12px 16px 16px 16px', margin: '16px', backgroundColor: 'rgba(0,0,0,0.4)', borderRadius: '8px' }}>
-            <div className="discord-username" style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '8px' }}>{profile.username}</div>
+            <div className="discord-username" style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '8px' }}>{profile.displayName}</div>
             <div className="discord-bio" style={{ fontSize: '14px', lineHeight: '1.4', whiteSpace: 'pre-wrap' }}>
               {renderBio(profile.bio)}
             </div>
