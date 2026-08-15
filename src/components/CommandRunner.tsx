@@ -8,6 +8,7 @@ export function CommandRunner() {
   const [command, setCommand] = useState('');
   const { data: stateData } = useSWR('/api/state', fetcher, { refreshInterval: 1890 });
   const [history, setHistory] = useState<{ id: string; cmd: string; output: string; status: 'success' | 'error' | 'running' }[]>([]);
+  const { data: commandsData } = useSWR('https://gewoonthy.onrender.com/api/commands', fetcher);
 
   // Update history from state if the bot pushes console history
   useEffect(() => {
@@ -40,7 +41,8 @@ export function CommandRunner() {
   };
 
   return (
-    <div className="module-card">
+    <div style={{ display: 'flex', gap: '20px', height: '100%' }}>
+      <div className="module-card" style={{ flex: 2 }}>
       <div className="card-header">
         <Terminal size={18} />
         <h2 style={{ fontSize: '1rem', fontWeight: 600 }}>Command Console</h2>
@@ -73,6 +75,32 @@ export function CommandRunner() {
         <button onClick={handleRun} className="btn-primary" disabled={!command.trim()}>
           <Play size={14} /> Run
         </button>
+      </div>
+      </div>
+
+      <div className="module-card" style={{ flex: 1, maxHeight: '100%', overflowY: 'auto' }}>
+        <div className="card-header">
+          <Terminal size={18} />
+          <h2 style={{ fontSize: '1rem', fontWeight: 600 }}>Available Commands</h2>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {!commandsData ? (
+            <div style={{ color: '#555', fontSize: '0.9rem' }}>Loading commands...</div>
+          ) : commandsData.length === 0 ? (
+            <div style={{ color: '#555', fontSize: '0.9rem' }}>No commands found or bot offline.</div>
+          ) : (
+            commandsData.map((cmd: any) => (
+              <div key={cmd.name} style={{ backgroundColor: '#2B2D31', padding: '10px', borderRadius: '6px' }}>
+                <div style={{ fontWeight: 'bold', color: '#5865F2', marginBottom: '4px' }}>.{cmd.name}</div>
+                <div style={{ fontSize: '0.85rem', color: '#ccc', marginBottom: '6px' }}>{cmd.description || 'No description provided.'}</div>
+                <div style={{ fontSize: '0.75rem', color: '#888', display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                  {cmd.usage && <span style={{ backgroundColor: '#1E1F22', padding: '2px 6px', borderRadius: '4px' }}>Usage: {cmd.usage}</span>}
+                  {cmd.aliases && cmd.aliases.length > 0 && <span style={{ backgroundColor: '#1E1F22', padding: '2px 6px', borderRadius: '4px' }}>Aliases: {cmd.aliases.join(', ')}</span>}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
       </div>
     </div>
   );
