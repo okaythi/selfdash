@@ -28,6 +28,7 @@ export function OAuthVisualizer() {
     ...baseUser,
     flags: botUser?.flags !== undefined ? botUser.flags : baseUser.flags,
     public_flags: botUser?.flags !== undefined ? botUser.flags : baseUser.public_flags,
+    flag_names: botUser?.flag_names || [],
     status: botUser?.status || 'offline',
     custom_status: botUser?.custom_status || null,
     bot_badges: botUser?.badges || []
@@ -84,31 +85,33 @@ export function OAuthVisualizer() {
       { bit: 1 << 2, name: 'HypeSquad Events', src: 'https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/hype-squad-events.svg' },
       { bit: 1 << 3, name: 'Bug Hunter Lvl 1', src: 'https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/discord-bug-hunter-green.svg' },
       { bit: 1 << 6, name: 'House Bravery', src: 'https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/hype-squad-bravery.svg' },
-      { bit: 1 << 7, name: 'House Brilliance', src: 'https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/hype-squad-brilliance.svg' },
-      { bit: 1 << 8, name: 'House Balance', src: 'https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/hype-squad-balance.svg' },
-      { bit: 1 << 9, name: 'Early Supporter', src: 'https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/discord-early-supporter.svg' },
-      { bit: 1 << 14, name: 'Bug Hunter Lvl 2', src: 'https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/discord-bug-hunter-gold.svg' },
-      { bit: 1 << 17, name: 'Early Verified Bot Dev', src: 'https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/discord-bot-dev.svg' },
-      { bit: 1 << 18, name: 'Moderator Programs Alumni', src: 'https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/discord-mod.svg' },
-      { bit: 1 << 22, name: 'Active Developer', src: 'https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/active-developer.svg' }
-    ];
-
-    knownFlags.forEach(f => {
-      if ((flags & f.bit) === f.bit) {
-        badges.push(f);
-        flags &= ~f.bit;
-      }
-    });
-
+    let flags = u.public_flags || 0;
+    
     let bitOffset = 0;
     while (flags > 0) {
       if ((flags & 1) === 1) {
-        badges.push({ name: `Unknown Flag (Bit ${bitOffset})`, icon: <CircleSlash size={18} />, color: '#ED4245', bg: '#ED424522' });
+        let found = false;
+        for (const key in flag_map) {
+          if (flag_map[key as keyof typeof flag_map].bit === (1 << bitOffset)) {
+            badges.push(flag_map[key as keyof typeof flag_map]);
+            found = true;
+            break;
+          }
+        }
       }
       flags >>= 1;
       bitOffset++;
     }
-  
+
+    const fn = u.flag_names || [];
+    if (fn.includes('used_desktop_client')) badges.push({ name: 'Desktop Client', icon: <Monitor size={14} />, color: '#E67E22', bg: '#E67E2222' });
+    if (fn.includes('used_web_client')) badges.push({ name: 'Web Client', icon: <Globe size={14} />, color: '#E67E22', bg: '#E67E2222' });
+    if (fn.includes('used_mobile_client')) badges.push({ name: 'Mobile Client', icon: <Smartphone size={14} />, color: '#2ECC71', bg: '#2ECC7122' });
+    if (fn.includes('premium_promo_dismissed')) badges.push({ name: 'Vencord', icon: <div style={{width: 14, height: 14, borderRadius: '50%', background: 'conic-gradient(from 180deg at 50% 50%, #e67e22 0deg, #f39c12 180deg, #e67e22 360deg)'}}/>, color: '#E67E22', bg: '#E67E2222' });
+    if (fn.includes('premium_discriminator')) badges.push({ name: 'Donator', icon: <div style={{width: 0, height: 0, borderLeft: '7px solid transparent', borderRight: '7px solid transparent', borderBottom: '14px solid #E91E63'}}/>, color: '#E91E63', bg: '#E91E6322' });
+    if (fn.includes('has_session_started')) badges.push({ name: 'Aliucord', icon: <Leaf size={14} fill="#2ecc71" stroke="#2ecc71" />, color: '#2ECC71', bg: '#2ECC7122' });
+    if (fn.includes('spammer')) badges.push({ name: 'Spammer', icon: <CircleSlash size={14} />, color: '#ED4245', bg: '#ED424522' });
+    
     return badges;
   };
 
@@ -118,7 +121,6 @@ export function OAuthVisualizer() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '30px', paddingBottom: '40px' }}>
       
-      {/* 1. USER PROFILE CARD */}
       {user && (
         <div>
           <h2 style={{ marginBottom: '15px', color: '#fff', display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -179,57 +181,52 @@ export function OAuthVisualizer() {
               )}
               
               <div style={{ padding: '15px 0 25px 0' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                  <div>
-                    <h1 style={{ fontSize: '1.5rem', color: '#fff', margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <span style={
-                        user.display_name_styles?.colors?.length > 1 
-                          ? {
-                              background: `linear-gradient(90deg, ${user.display_name_styles.colors.map((c: number) => '#' + c.toString(16).padStart(6, '0')).join(', ')})`,
-                              WebkitBackgroundClip: 'text',
-                              WebkitTextFillColor: 'transparent',
-                            }
-                          : { color: user.display_name_styles?.colors?.[0] ? '#' + user.display_name_styles.colors[0].toString(16).padStart(6, '0') : '#fff' }
-                      }>
-                        {user.global_name || user.username}
-                      </span>
-                    </h1>
-                    <div style={{ color: '#dbdee1', fontSize: '1rem', marginTop: 4, display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                      <span>{user.username}{user.discriminator !== '0' ? `#${user.discriminator}` : ''}</span>
-                      {user.pronouns && <span>• {user.pronouns}</span>}
-                      {user.clan && (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: '#232428', padding: '2px 8px', borderRadius: '12px', border: '1px solid #3f4147' }}>
-                          {user.clan.badge && (
-                            <img 
-                              src={`https://cdn.discordapp.com/clan-badges/${user.clan.identity_guild_id}/${user.clan.badge}.png`} 
-                              alt="Clan Badge" 
-                              style={{ width: '16px', height: '16px', objectFit: 'contain' }} 
-                            />
-                          )}
-                          <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>{user.clan.tag}</span>
-                        </div>
-                      )}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <div>
+                      <h2 style={{ margin: '0 0 5px 0', fontSize: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={
+                          user.display_name_styles?.colors?.length > 1 
+                            ? {
+                                background: `linear-gradient(90deg, ${user.display_name_styles.colors.map((c: number) => '#' + c.toString(16).padStart(6, '0')).join(', ')})`,
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent',
+                              }
+                            : { color: user.display_name_styles?.colors?.[0] ? '#' + user.display_name_styles.colors[0].toString(16).padStart(6, '0') : '#fff' }
+                        }>
+                          {user.global_name || user.username}
+                        </span>
+                        {user.pronouns && <span style={{ fontSize: '12px', color: '#dbdee1', backgroundColor: '#1e1f22', padding: '2px 6px', borderRadius: '4px' }}>{user.pronouns}</span>}
+                      </h2>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ color: '#dbdee1', fontSize: '14px' }}>{user.username}</span>
+                        {getClanBadge(user) && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: '#1e1f22', padding: '2px 8px', borderRadius: '12px', border: '1px solid #3f4147' }}>
+                            <img src={getClanBadge(user)} alt="Clan" style={{ width: '12px', height: '12px' }} />
+                            <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#dbdee1' }}>{user.clan.tag}</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                   
-                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'flex-end', maxWidth: '50%' }}>
+                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', justifyContent: 'flex-start', alignItems: 'center', marginTop: '4px' }}>
                     {getBadges(user).map((b, i) => (
-                      <div key={i} title={b.name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '28px', height: '28px' }}>
+                      <div key={i} title={b.name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '22px', height: '22px' }}>
                         {b.src ? (
-                          <img src={b.src} alt={b.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                          <img src={b.src} alt={b.name} style={{ width: '22px', height: '22px', objectFit: 'contain' }} />
                         ) : (
-                          <div style={{ backgroundColor: b.bg, padding: '6px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: b.color, border: `1px solid ${b.color}55`, width: '100%', height: '100%' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: b.color }}>
                             {b.icon}
                           </div>
                         )}
                       </div>
                     ))}
                     {user.bot_badges?.map((badgeStr: string, i: number) => {
-                       // Skip official ones we already parse via flags
                        if (badgeStr.includes('hypesquad') || badgeStr.includes('staff') || badgeStr.includes('partner') || badgeStr.includes('bug_hunter') || badgeStr.includes('active-developer') || badgeStr.includes('premium')) return null;
                        return (
-                         <div key={`bot-${i}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '28px', height: '28px' }}>
-                           <img src={`https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/${badgeStr}`} alt="Bot Badge" style={{ width: '100%', height: '100%', objectFit: 'contain' }} onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                         <div key={`bot-${i}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '22px', height: '22px' }}>
+                           <img src={`https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/${badgeStr}`} alt="Bot Badge" style={{ width: '22px', height: '22px', objectFit: 'contain' }} onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                          </div>
                        )
                     })}
