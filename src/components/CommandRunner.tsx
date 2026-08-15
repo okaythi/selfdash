@@ -33,7 +33,7 @@ export function CommandRunner() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ command: { type: 'shell', text: cmdText, id: newCmd.id } })
       });
-    } catch (e) {
+    } catch {
       setHistory(prev => prev.map(item => 
         item.id === newCmd.id ? { ...item, status: 'error', output: 'Failed to queue command' } : item
       ));

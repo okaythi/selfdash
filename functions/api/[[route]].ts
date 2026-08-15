@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
 import { drizzle } from 'drizzle-orm/d1'
-import { state, commands_queue, logs } from '../../src/db/schema'
+import { state, commands_queue } from '../../src/db/schema'
 import { eq } from 'drizzle-orm'
 import { sign, verify } from 'hono/jwt'
 import { setCookie, getCookie } from 'hono/cookie'
@@ -131,7 +131,7 @@ const dashboardAuth = async (c: any, next: any) => {
     const decoded = await verify(token, c.env.JWT_SECRET || 'fallback_secret_change_me', 'HS256');
     if (decoded.id !== ADMIN_DISCORD_ID) throw new Error('Invalid ID');
     await next();
-  } catch (e) {
+  } catch {
     return c.json({ error: 'Unauthorized' }, 401);
   }
 }
