@@ -4,24 +4,29 @@ import { Server, ShieldCheck, Mail, Link as LinkIcon, CircleSlash, Key, Monitor 
 const fetcher = (url: string) => fetch(url).then(r => r.json());
 
 export function OAuthVisualizer() {
-  const { data: stateData, isLoading } = useSWR('/api/state', fetcher, { refreshInterval: 5000 });
+  const { data: userState, error: userError } = useSWR('/api/state?key=oauth_user_data', fetcher);
+  const { data: connState, error: connError } = useSWR('/api/state?key=oauth_connections', fetcher);
+  const { data: guildsState, error: guildsError } = useSWR('/api/state?key=oauth_guilds', fetcher);
 
-  if (isLoading) {
-    return <div style={{ color: 'white', padding: 20 }}>Loading OAuth Data...</div>;
-  }
+  const baseUser = userState?.value ? JSON.parse(userState.value) : null;
+  const connections = connState?.value ? JSON.parse(connState.value) : [];
+  const guilds = guildsState?.value ? JSON.parse(guildsState.value) : [];
 
-  const getVal = (k: string) => {
-    const item = stateData?.find((s: any) => s.key === k);
-    try {
-      return item ? JSON.parse(item.value) : null;
-    } catch {
-      return null;
-    }
-  };
+  // Fetch rich profile data from the Python Bot API
+  const { data: botUsers } = useSWR(baseUser?.id ? `https://gewoonthy.onrender.com/api/get_users?ids=${baseUser.id}` : null, fetcher);
+  const botUser = botUsers && botUsers.length > 0 ? botUsers[0] : null;
 
-  const user = getVal('oauth_user_data');
-  const connections = getVal('oauth_connections');
-  const guilds = getVal('oauth_guilds');
+  // Merge the OAuth user with the Bot user data
+  const user = baseUser ? {
+    ...baseUser,
+    flags: botUser?.flags !== undefined ? botUser.flags : baseUser.flags,
+    public_flags: botUser?.flags !== undefined ? botUser.flags : baseUser.public_flags,
+    status: botUser?.status || 'offline',
+    custom_status: botUser?.custom_status || null,
+    bot_badges: botUser?.badges || []
+  } : null;
+
+  if (userError || connError || guildsError) return <div>Failed to load data</div>;
 
   const hasData = user || connections || guilds;
 
@@ -135,7 +140,36 @@ export function OAuthVisualizer() {
                     style={{ position: 'absolute', top: '-12px', left: '-12px', width: '144px', height: '144px', pointerEvents: 'none' }}
                   />
                 )}
+                
+                {user.status && user.status !== 'offline' && (
+                  <div style={{
+                    position: 'absolute',
+                    bottom: '0',
+                    right: '0',
+                    width: '32px',
+                    height: '32px',
+                    backgroundColor: 'var(--discord-bg)',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}>
+                    <div style={{
+                      width: '20px',
+                      height: '20px',
+                      borderRadius: '50%',
+                      backgroundColor: user.status === 'online' ? '#23A559' : user.status === 'idle' ? '#F0B232' : user.status === 'dnd' ? '#F23F42' : '#80848E'
+                    }} />
+                  </div>
+                )}
               </div>
+              
+              {user.custom_status && (
+                <div style={{ position: 'absolute', top: '20px', left: '160px', backgroundColor: '#111214', padding: '8px 12px', borderRadius: '8px', border: '1px solid #3f4147', display: 'flex', alignItems: 'center', gap: '8px', zIndex: 10 }}>
+                  <span style={{ fontSize: '0.9rem', color: '#dbdee1' }}>{user.custom_status}</span>
+                </div>
+              )}
+              
               <div style={{ padding: '15px 0 25px 0' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <div>
@@ -182,6 +216,15 @@ export function OAuthVisualizer() {
                         )}
                       </div>
                     ))}
+                    {user.bot_badges?.map((badgeStr: string, i: number) => {
+                       // Skip official ones we already parse via flags
+                       if (badgeStr.includes('hypesquad') || badgeStr.includes('staff') || badgeStr.includes('partner') || badgeStr.includes('bug_hunter') || badgeStr.includes('active-developer') || badgeStr.includes('premium')) return null;
+                       return (
+                         <div key={`bot-${i}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '28px', height: '28px' }}>
+                           <img src={`https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/${badgeStr}`} alt="Bot Badge" style={{ width: '100%', height: '100%', objectFit: 'contain' }} onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                         </div>
+                       )
+                    })}
                   </div>
                 </div>
 
