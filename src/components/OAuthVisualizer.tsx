@@ -225,8 +225,8 @@ export function OAuthVisualizer() {
                         {b.src ? (
                           <img src={b.src} alt={b.name} style={{ width: '22px', height: '22px', objectFit: 'contain' }} />
                         ) : (
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: b.color }}>
-                            {b.icon}
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: (b as any).color }}>
+                            {(b as any).icon}
                           </div>
                         )}
                       </div>
