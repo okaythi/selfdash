@@ -1,5 +1,5 @@
 import useSWR from 'swr';
-import { Server, ShieldCheck, Mail, Link as LinkIcon, CircleSlash, Key, Monitor, Globe, Smartphone, Flame, Leaf } from 'lucide-react';
+import { Server, ShieldCheck, Mail, Link as LinkIcon, CircleSlash, Key, Monitor, Globe, Smartphone, Leaf } from 'lucide-react';
 
 const fetcher = (url: string) => fetch(url).then(r => r.json());
 
@@ -215,7 +215,7 @@ export function OAuthVisualizer() {
                         <span style={{ color: '#dbdee1', fontSize: '14px' }}>{user.username}</span>
                         {getClanBadge(user) && (
                           <div style={{ display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: '#1e1f22', padding: '2px 8px', borderRadius: '12px', border: '1px solid #3f4147' }}>
-                            <img src={getClanBadge(user)} alt="Clan" style={{ width: '12px', height: '12px' }} />
+                            <img src={getClanBadge(user) || undefined} alt="Clan" style={{ width: '12px', height: '12px' }} />
                             <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#dbdee1' }}>{user.clan.tag}</span>
                           </div>
                         )}
