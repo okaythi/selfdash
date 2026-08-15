@@ -1,4 +1,5 @@
 import useSWR from 'swr';
+import { Server, ShieldCheck, Mail, Link as LinkIcon, BadgeCheck, CircleSlash, Key, Monitor } from 'lucide-react';
 
 const fetcher = (url: string) => fetch(url).then(r => r.json());
 
@@ -6,7 +7,7 @@ export function OAuthVisualizer() {
   const { data: stateData, isLoading } = useSWR('/api/state', fetcher, { refreshInterval: 5000 });
 
   if (isLoading) {
-    return <div style={{ color: 'white' }}>Loading OAuth Data...</div>;
+    return <div style={{ color: 'white', padding: 20 }}>Loading OAuth Data...</div>;
   }
 
   const getVal = (k: string) => {
@@ -18,24 +19,18 @@ export function OAuthVisualizer() {
     }
   };
 
-  const oauthUserData = getVal('oauth_user_data');
-  const oauthConnections = getVal('oauth_connections');
-  const oauthGuilds = getVal('oauth_guilds');
+  const user = getVal('oauth_user_data');
+  const connections = getVal('oauth_connections');
+  const guilds = getVal('oauth_guilds');
 
-  const hasData = oauthUserData || oauthConnections || oauthGuilds;
+  const hasData = user || connections || guilds;
 
-  return (
-    <div>
-      <h2 style={{ marginBottom: '10px' }}>OAuth Data Visualizer</h2>
-      <p style={{ color: '#aaa', marginBottom: '20px' }}>
-        This data is fetched directly from Discord's OAuth2 API when you log in. 
-        If it's empty, try logging out and logging back in to authorize the new scopes!
-      </p>
-
-      {!hasData ? (
+  if (!hasData) {
+    return (
+      <div style={{ padding: '20px' }}>
         <div style={{ padding: '20px', backgroundColor: 'var(--dash-surface)', borderRadius: '8px', border: '1px solid #ED4245' }}>
           <h3 style={{ color: '#ED4245', marginBottom: '10px' }}>No OAuth data found</h3>
-          <p>You need to re-authenticate to grant the new scopes. Please click Logout below and sign in again.</p>
+          <p>You need to re-authenticate to grant the new scopes.</p>
           <button 
             className="btn-danger" 
             onClick={() => window.location.href = '/api/auth/logout'}
@@ -44,44 +39,192 @@ export function OAuthVisualizer() {
             Logout
           </button>
         </div>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          
-          <div className="discord-replica-container" style={{ padding: '20px' }}>
-            <h3 style={{ marginBottom: '15px', color: '#5865F2' }}>identify (User Profile)</h3>
-            <div style={{ backgroundColor: '#1e1e24', padding: '15px', borderRadius: '8px', overflowX: 'auto' }}>
-              {oauthUserData ? (
-                <pre style={{ margin: 0, color: '#e2e8f0', fontFamily: 'monospace', fontSize: '13px', whiteSpace: 'pre-wrap' }}>
-                  {JSON.stringify(oauthUserData, null, 2)}
-                </pre>
-              ) : <span style={{ color: '#aaa' }}>No identify data</span>}
-            </div>
-          </div>
+      </div>
+    );
+  }
 
-          <div className="discord-replica-container" style={{ padding: '20px' }}>
-            <h3 style={{ marginBottom: '15px', color: '#5865F2' }}>connections</h3>
-            <div style={{ backgroundColor: '#1e1e24', padding: '15px', borderRadius: '8px', overflowX: 'auto' }}>
-              {oauthConnections ? (
-                <pre style={{ margin: 0, color: '#e2e8f0', fontFamily: 'monospace', fontSize: '13px', whiteSpace: 'pre-wrap' }}>
-                  {JSON.stringify(oauthConnections, null, 2)}
-                </pre>
-              ) : <span style={{ color: '#aaa' }}>No connections data</span>}
-            </div>
-          </div>
+  const renderAvatar = (u: any) => {
+    if (u.avatar) {
+      const ext = u.avatar.startsWith('a_') ? 'gif' : 'png';
+      return `https://cdn.discordapp.com/avatars/${u.id}/${u.avatar}.${ext}?size=128`;
+    }
+    return 'https://cdn.discordapp.com/embed/avatars/0.png';
+  };
 
-          <div className="discord-replica-container" style={{ padding: '20px' }}>
-            <h3 style={{ marginBottom: '15px', color: '#5865F2' }}>guilds</h3>
-            <div style={{ backgroundColor: '#1e1e24', padding: '15px', borderRadius: '8px', overflowX: 'auto' }}>
-              {oauthGuilds ? (
-                <pre style={{ margin: 0, color: '#e2e8f0', fontFamily: 'monospace', fontSize: '13px', whiteSpace: 'pre-wrap', maxHeight: '400px', overflowY: 'auto' }}>
-                  {JSON.stringify(oauthGuilds, null, 2)}
-                </pre>
-              ) : <span style={{ color: '#aaa' }}>No guilds data</span>}
+  const renderBanner = (u: any) => {
+    if (u.banner) {
+      const ext = u.banner.startsWith('a_') ? 'gif' : 'png';
+      return `https://cdn.discordapp.com/banners/${u.id}/${u.banner}.${ext}?size=600`;
+    }
+    return null;
+  };
+
+  const bannerUrl = user ? renderBanner(user) : null;
+  const accentColor = user?.accent_color ? `#${user.accent_color.toString(16).padStart(6, '0')}` : 'var(--dash-accent)';
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '30px', paddingBottom: '40px' }}>
+      
+      {/* 1. USER PROFILE CARD */}
+      {user && (
+        <div>
+          <h2 style={{ marginBottom: '15px', color: '#fff', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <Key size={24} color="#5865F2" /> Identity Profile
+          </h2>
+          <div className="discord-replica-container" style={{ maxWidth: '800px', margin: 0 }}>
+            <div 
+              style={{ 
+                height: '150px', 
+                backgroundColor: bannerUrl ? 'transparent' : accentColor,
+                backgroundImage: bannerUrl ? `url(${bannerUrl})` : 'none',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center'
+              }} 
+            />
+            <div style={{ position: 'relative', marginTop: '-60px', padding: '0 20px' }}>
+              <img 
+                src={renderAvatar(user)} 
+                alt="Avatar" 
+                style={{ width: '120px', height: '120px', borderRadius: '50%', border: '6px solid var(--discord-bg)', backgroundColor: '#222' }} 
+              />
+              <div style={{ padding: '15px 0 25px 0' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div>
+                    <h1 style={{ fontSize: '1.5rem', color: '#fff', margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+                      {user.global_name || user.username}
+                      {user.clan && (
+                        <span style={{ fontSize: '0.8rem', backgroundColor: '#232428', padding: '2px 6px', borderRadius: '4px', border: '1px solid #3f4147', color: '#dbdee1' }}>
+                          [{user.clan.tag}]
+                        </span>
+                      )}
+                    </h1>
+                    <p style={{ color: '#dbdee1', fontSize: '1rem', marginTop: 4 }}>
+                      {user.username}{user.discriminator !== '0' ? `#${user.discriminator}` : ''}
+                    </p>
+                  </div>
+                  {user.premium_type > 0 && (
+                    <div style={{ backgroundColor: '#ff73fa22', padding: '6px 12px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: 6, color: '#ff73fa', border: '1px solid #ff73fa55' }}>
+                      <BadgeCheck size={16} />
+                      <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>Nitro</span>
+                    </div>
+                  )}
+                </div>
+
+                <div style={{ marginTop: '20px', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '15px' }}>
+                  <div style={{ backgroundColor: '#2b2d31', padding: '12px', borderRadius: '8px' }}>
+                    <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: 700, color: '#B5BAC1', marginBottom: 5 }}>Email</div>
+                    <div style={{ color: '#fff', display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <Mail size={16} /> {user.email || 'Hidden'}
+                      {user.verified && <ShieldCheck size={16} color="#23A559" />}
+                    </div>
+                  </div>
+                  <div style={{ backgroundColor: '#2b2d31', padding: '12px', borderRadius: '8px' }}>
+                    <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: 700, color: '#B5BAC1', marginBottom: 5 }}>Locale</div>
+                    <div style={{ color: '#fff' }}>{user.locale?.toUpperCase() || 'Unknown'}</div>
+                  </div>
+                  <div style={{ backgroundColor: '#2b2d31', padding: '12px', borderRadius: '8px' }}>
+                    <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: 700, color: '#B5BAC1', marginBottom: 5 }}>MFA Enabled</div>
+                    <div style={{ color: user.mfa_enabled ? '#23A559' : '#F23F42', display: 'flex', alignItems: 'center', gap: 6 }}>
+                      {user.mfa_enabled ? <ShieldCheck size={16} /> : <CircleSlash size={16} />} 
+                      {user.mfa_enabled ? 'Yes' : 'No'}
+                    </div>
+                  </div>
+                  <div style={{ backgroundColor: '#2b2d31', padding: '12px', borderRadius: '8px' }}>
+                    <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: 700, color: '#B5BAC1', marginBottom: 5 }}>Public Flags</div>
+                    <div style={{ color: '#fff', fontFamily: 'monospace' }}>{user.public_flags}</div>
+                  </div>
+                </div>
+
+              </div>
             </div>
           </div>
-          
         </div>
       )}
+
+      {/* 2. CONNECTIONS */}
+      {connections && connections.length > 0 && (
+        <div>
+          <h2 style={{ marginBottom: '15px', color: '#fff', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <LinkIcon size={24} color="#5865F2" /> Connected Accounts
+          </h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '15px' }}>
+            {connections.map((conn: any, idx: number) => (
+              <div key={idx} style={{ backgroundColor: 'var(--discord-surface)', borderRadius: '8px', padding: '15px', display: 'flex', alignItems: 'center', gap: 15, border: '1px solid #1E1F22' }}>
+                <div style={{ width: 40, height: 40, backgroundColor: '#2b2d31', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Monitor size={20} color="#fff" />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ color: '#fff', fontWeight: 600, fontSize: '1rem', display: 'flex', alignItems: 'center', gap: 6 }}>
+                    {conn.name}
+                    {conn.verified && <ShieldCheck size={14} color="#23A559" />}
+                  </div>
+                  <div style={{ color: '#B5BAC1', fontSize: '0.85rem', textTransform: 'capitalize' }}>{conn.type}</div>
+                </div>
+                {conn.show_activity && (
+                  <div style={{ fontSize: '0.75rem', backgroundColor: '#5865F222', color: '#5865F2', padding: '2px 6px', borderRadius: 4 }}>
+                    Activity On
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 3. GUILDS */}
+      {guilds && guilds.length > 0 && (
+        <div>
+          <h2 style={{ marginBottom: '15px', color: '#fff', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <Server size={24} color="#5865F2" /> Servers ({guilds.length})
+          </h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '15px' }}>
+            {guilds.map((g: any, idx: number) => (
+              <div key={idx} style={{ backgroundColor: 'var(--discord-surface)', borderRadius: '8px', overflow: 'hidden', border: '1px solid #1E1F22', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ 
+                  height: '60px', 
+                  backgroundColor: '#2b2d31',
+                  backgroundImage: g.banner ? `url(https://cdn.discordapp.com/banners/${g.id}/${g.banner}.png?size=300)` : 'none',
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center'
+                }} />
+                <div style={{ display: 'flex', gap: '15px', padding: '0 15px 15px', marginTop: '-25px' }}>
+                  <div style={{ width: 60, height: 60, borderRadius: '16px', backgroundColor: '#111214', border: '4px solid var(--discord-surface)', overflow: 'hidden', flexShrink: 0 }}>
+                    {g.icon ? (
+                      <img src={`https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png?size=128`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '1.2rem' }}>
+                        {g.name.charAt(0)}
+                      </div>
+                    )}
+                  </div>
+                  <div style={{ paddingTop: '30px', flex: 1, minWidth: 0 }}>
+                    <div style={{ color: '#fff', fontWeight: 600, fontSize: '1.05rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'flex', alignItems: 'center', gap: 6 }}>
+                      {g.name}
+                      {g.owner && <Key size={14} color="#F1C40F" />}
+                    </div>
+                  </div>
+                </div>
+                
+                {g.features && g.features.length > 0 && (
+                  <div style={{ padding: '0 15px 15px', display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                    {g.features.slice(0, 5).map((f: string, i: number) => (
+                      <span key={i} style={{ backgroundColor: '#2b2d31', color: '#dbdee1', fontSize: '0.65rem', padding: '2px 6px', borderRadius: '4px', border: '1px solid #3f4147' }}>
+                        {f.replace(/_/g, ' ')}
+                      </span>
+                    ))}
+                    {g.features.length > 5 && (
+                      <span style={{ backgroundColor: '#2b2d31', color: '#888', fontSize: '0.65rem', padding: '2px 6px', borderRadius: '4px', border: '1px solid #3f4147' }}>
+                        +{g.features.length - 5} more
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
