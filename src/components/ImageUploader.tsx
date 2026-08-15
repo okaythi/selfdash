@@ -86,7 +86,7 @@ export function ImageUploader({
       {children}
       
       {/* Avatar Edit Button */}
-      {type === 'avatar' && (isHovered || menuOpen) && (
+      {type === 'avatar' && isHovered && (
         <div 
           onClick={() => setMenuOpen(!menuOpen)}
           style={{
@@ -112,7 +112,7 @@ export function ImageUploader({
       )}
 
       {/* Banner Edit Button */}
-      {type === 'banner' && (isHovered || menuOpen) && (
+      {type === 'banner' && isHovered && (
         <div 
           onClick={() => setMenuOpen(!menuOpen)}
           style={{

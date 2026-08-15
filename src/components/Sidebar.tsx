@@ -3,7 +3,7 @@ import { Home, MessageSquare, User, Terminal } from 'lucide-react';
 export function Sidebar({ activeTab, setActiveTab }: { activeTab: string, setActiveTab: (t: string) => void }) {
   const tabs = [
     { id: 'dashboard', label: 'Channel View', icon: Home },
-    { id: 'profile', label: 'Profile Editor', icon: User },
+    { id: 'profile', label: 'Profile', icon: User },
     { id: 'messages', label: 'Direct Messages', icon: MessageSquare },
     { id: 'console', label: 'Command Console', icon: Terminal },
   ];

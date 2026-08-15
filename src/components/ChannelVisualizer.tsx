@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Hash, Search, Bell, Pin, Users } from 'lucide-react';
 import useSWR from 'swr';
 
@@ -11,7 +12,19 @@ export function ChannelVisualizer() {
     return item ? JSON.parse(item.value) : null;
   };
 
-  const messages = getVal('bot_recent_messages') || [];
+  useEffect(() => {
+    // Request channel context when component mounts
+    fetch('/api/queue-command', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        command: { type: 'fetch_channel_context' } 
+      })
+    });
+  }, []);
+
+  const channelContext = getVal('bot_channel_context') || { channel_name: 'No recent messages', messages: [] };
+  const messages = channelContext.messages;
 
   return (
     <div className="module-card no-pad" style={{ height: '500px', display: 'flex', flexDirection: 'column' }}>
@@ -19,7 +32,7 @@ export function ChannelVisualizer() {
       <div className="discord-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#FFF', fontWeight: 600 }}>
           <Hash size={24} color="#80848E" />
-          general
+          {channelContext.channel_name}
         </div>
         <div className="discord-header-icons">
           <Bell size={20} />
@@ -34,9 +47,9 @@ export function ChannelVisualizer() {
 
       {/* Discord Chat Replica */}
       <div className="discord-chat-area">
-        {messages.length === 0 && <div style={{ color: '#aaa', textAlign: 'center', marginTop: '20px' }}>No messages loaded.</div>}
+        {messages.length === 0 && <div style={{ color: '#aaa', textAlign: 'center', marginTop: '20px' }}>No messages loaded. Send a message on Discord to sync your context.</div>}
         {messages.map((msg: any) => (
-          <div key={msg.id} className="discord-message">
+          <div key={msg.id} className="discord-message" style={msg.isBot ? { backgroundColor: 'rgba(255,255,255,0.03)' } : {}}>
             <img src={msg.avatar} alt="Avatar" className="discord-msg-avatar" />
             <div className="discord-msg-content">
               <div className="discord-msg-header">
@@ -44,7 +57,7 @@ export function ChannelVisualizer() {
                 {msg.isBot && <span className="discord-bot-tag">APP</span>}
                 <span className="discord-msg-time">{msg.time}</span>
               </div>
-              <div className="discord-msg-body">{msg.content}</div>
+              <div className="discord-msg-body" style={msg.isBot ? { fontWeight: 'bold' } : {}}>{msg.content}</div>
             </div>
           </div>
         ))}
@@ -53,7 +66,7 @@ export function ChannelVisualizer() {
       {/* Discord Input Replica */}
       <div className="discord-input-wrapper">
         <div className="discord-input">
-          Message #general
+          Message #{channelContext.channel_name}
         </div>
       </div>
     </div>
