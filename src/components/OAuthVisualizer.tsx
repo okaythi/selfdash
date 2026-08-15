@@ -4,13 +4,20 @@ import { Server, ShieldCheck, Mail, Link as LinkIcon, CircleSlash, Key, Monitor 
 const fetcher = (url: string) => fetch(url).then(r => r.json());
 
 export function OAuthVisualizer() {
-  const { data: userState, error: userError } = useSWR('/api/state?key=oauth_user_data', fetcher);
-  const { data: connState, error: connError } = useSWR('/api/state?key=oauth_connections', fetcher);
-  const { data: guildsState, error: guildsError } = useSWR('/api/state?key=oauth_guilds', fetcher);
+  const { data: stateData, error: stateError, isLoading } = useSWR('/api/state', fetcher);
 
-  const baseUser = userState?.value ? JSON.parse(userState.value) : null;
-  const connections = connState?.value ? JSON.parse(connState.value) : [];
-  const guilds = guildsState?.value ? JSON.parse(guildsState.value) : [];
+  const getVal = (k: string) => {
+    const item = stateData?.find((s: any) => s.key === k);
+    try {
+      return item ? JSON.parse(item.value) : null;
+    } catch {
+      return null;
+    }
+  };
+
+  const baseUser = getVal('oauth_user_data');
+  const connections = getVal('oauth_connections') || [];
+  const guilds = getVal('oauth_guilds') || [];
 
   // Fetch rich profile data from the Python Bot API
   const { data: botUsers } = useSWR(baseUser?.id ? `https://gewoonthy.onrender.com/api/get_users?ids=${baseUser.id}` : null, fetcher);
@@ -26,7 +33,8 @@ export function OAuthVisualizer() {
     bot_badges: botUser?.badges || []
   } : null;
 
-  if (userError || connError || guildsError) return <div>Failed to load data</div>;
+  if (stateError) return <div>Failed to load data</div>;
+  if (isLoading) return <div style={{ color: 'white', padding: 20 }}>Loading OAuth Data...</div>;
 
   const hasData = user || connections || guilds;
 
