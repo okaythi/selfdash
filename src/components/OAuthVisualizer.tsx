@@ -1,5 +1,5 @@
 import useSWR from 'swr';
-import { Server, ShieldCheck, Mail, Link as LinkIcon, CircleSlash, Key, Monitor } from 'lucide-react';
+import { Server, ShieldCheck, Mail, Link as LinkIcon, CircleSlash, Key, Monitor, Globe, Smartphone, Flame, Leaf } from 'lucide-react';
 
 const fetcher = (url: string) => fetch(url).then(r => r.json());
 
@@ -73,9 +73,15 @@ export function OAuthVisualizer() {
     return null;
   };
 
+  const getClanBadge = (u: any) => {
+    if (u.clan?.identity_guild_id && u.clan?.badge) {
+      return `https://cdn.discordapp.com/clan-badges/${u.clan.identity_guild_id}/${u.clan.badge}.png`;
+    }
+    return null;
+  };
+
   const getBadges = (u: any) => {
     const badges = [];
-    let flags = u.public_flags || 0;
     
     if (u.premium_type > 0) badges.push({ name: 'Nitro', src: 'https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/discord-nitro.svg' });
     
@@ -99,11 +105,9 @@ export function OAuthVisualizer() {
     let bitOffset = 0;
     while (flags > 0) {
       if ((flags & 1) === 1) {
-        let found = false;
         for (const key in flag_map) {
           if (flag_map[key as keyof typeof flag_map].bit === (1 << bitOffset)) {
             badges.push(flag_map[key as keyof typeof flag_map]);
-            found = true;
             break;
           }
         }
