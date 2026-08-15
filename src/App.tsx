@@ -7,6 +7,7 @@ import { CommandRunner } from './components/CommandRunner';
 import { ChannelVisualizer } from './components/ChannelVisualizer';
 import { DMVisualizer } from './components/DMVisualizer';
 import { OAuthVisualizer } from './components/OAuthVisualizer';
+import { CustomActivity } from './components/CustomActivity';
 
 const fetcher = async (url: string) => {
   const r = await fetch(url);
@@ -44,6 +45,7 @@ function App() {
           {activeTab === 'messages' && <DMVisualizer />}
           {activeTab === 'oauth' && <OAuthVisualizer />}
           {activeTab === 'console' && <CommandRunner />}
+          {activeTab === 'movies' && <CustomActivity />}
         </div>
       </div>
     </div>
