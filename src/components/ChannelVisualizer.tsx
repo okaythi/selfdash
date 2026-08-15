@@ -27,7 +27,7 @@ export function ChannelVisualizer() {
   const messages = channelContext.messages;
 
   return (
-    <div className="module-card no-pad" style={{ height: '500px', display: 'flex', flexDirection: 'column' }}>
+    <div className="module-card no-pad" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       {/* Discord Header Replica */}
       <div className="discord-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#FFF', fontWeight: 600 }}>

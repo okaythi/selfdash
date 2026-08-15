@@ -50,7 +50,7 @@ export function DMVisualizer() {
   };
 
   return (
-    <div className="module-card no-pad" style={{ height: '600px', display: 'flex', overflow: 'hidden' }}>
+    <div className="module-card no-pad" style={{ height: '100%', display: 'flex', overflow: 'hidden' }}>
       
       {/* Sidebar for DMs */}
       <div style={{ width: '240px', backgroundColor: '#2b2d31', display: 'flex', flexDirection: 'column', borderRight: '1px solid #1e1f22' }}>
