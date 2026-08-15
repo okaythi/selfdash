@@ -1,5 +1,5 @@
 import useSWR from 'swr';
-import { Server, ShieldCheck, Mail, Link as LinkIcon, BadgeCheck, CircleSlash, Key, Monitor } from 'lucide-react';
+import { Server, ShieldCheck, Mail, Link as LinkIcon, BadgeCheck, CircleSlash, Key, Monitor, Swords, Sparkles, Scale, Crown, Bug, Wrench, Handshake, Zap, Code, TerminalSquare } from 'lucide-react';
 
 const fetcher = (url: string) => fetch(url).then(r => r.json());
 
@@ -59,6 +59,26 @@ export function OAuthVisualizer() {
     return null;
   };
 
+  const getBadges = (u: any) => {
+    const badges = [];
+    const flags = u.public_flags || 0;
+    
+    if (u.premium_type > 0) badges.push({ name: 'Nitro', icon: <BadgeCheck size={18} />, color: '#ff73fa', bg: '#ff73fa22' });
+    if (flags & (1 << 0)) badges.push({ name: 'Staff', icon: <Wrench size={18} />, color: '#5865F2', bg: '#5865F222' });
+    if (flags & (1 << 1)) badges.push({ name: 'Partner', icon: <Handshake size={18} />, color: '#5865F2', bg: '#5865F222' });
+    if (flags & (1 << 2)) badges.push({ name: 'HypeSquad', icon: <Zap size={18} />, color: '#FEE75C', bg: '#FEE75C22' });
+    if (flags & (1 << 3) || flags & (1 << 14)) badges.push({ name: 'Bug Hunter', icon: <Bug size={18} />, color: '#5865F2', bg: '#5865F222' });
+    if (flags & (1 << 6)) badges.push({ name: 'Bravery', icon: <Swords size={18} />, color: '#9b59b6', bg: '#9b59b622' });
+    if (flags & (1 << 7)) badges.push({ name: 'Brilliance', icon: <Sparkles size={18} />, color: '#F23F42', bg: '#F23F4222' });
+    if (flags & (1 << 8)) badges.push({ name: 'Balance', icon: <Scale size={18} />, color: '#23A559', bg: '#23A55922' });
+    if (flags & (1 << 9)) badges.push({ name: 'Early Supporter', icon: <Crown size={18} />, color: '#F1C40F', bg: '#F1C40F22' });
+    if (flags & (1 << 17)) badges.push({ name: 'Early Bot Dev', icon: <TerminalSquare size={18} />, color: '#fff', bg: '#ffffff22' });
+    if (flags & (1 << 18)) badges.push({ name: 'Moderator Alumni', icon: <ShieldCheck size={18} />, color: '#5865F2', bg: '#5865F222' });
+    if (flags & (1 << 22)) badges.push({ name: 'Active Developer', icon: <Code size={18} />, color: '#fff', bg: '#ffffff22' });
+  
+    return badges;
+  };
+
   const bannerUrl = user ? renderBanner(user) : null;
   const accentColor = user?.accent_color ? `#${user.accent_color.toString(16).padStart(6, '0')}` : 'var(--dash-accent)';
 
@@ -102,12 +122,14 @@ export function OAuthVisualizer() {
                       {user.username}{user.discriminator !== '0' ? `#${user.discriminator}` : ''}
                     </p>
                   </div>
-                  {user.premium_type > 0 && (
-                    <div style={{ backgroundColor: '#ff73fa22', padding: '6px 12px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: 6, color: '#ff73fa', border: '1px solid #ff73fa55' }}>
-                      <BadgeCheck size={16} />
-                      <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>Nitro</span>
-                    </div>
-                  )}
+                  
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'flex-end', maxWidth: '50%' }}>
+                    {getBadges(user).map((b, i) => (
+                      <div key={i} title={b.name} style={{ backgroundColor: b.bg, padding: '6px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: b.color, border: `1px solid ${b.color}55`, width: '32px', height: '32px' }}>
+                        {b.icon}
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
                 <div style={{ marginTop: '20px', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '15px' }}>
@@ -131,7 +153,14 @@ export function OAuthVisualizer() {
                   </div>
                   <div style={{ backgroundColor: '#2b2d31', padding: '12px', borderRadius: '8px' }}>
                     <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: 700, color: '#B5BAC1', marginBottom: 5 }}>Public Flags</div>
-                    <div style={{ color: '#fff', fontFamily: 'monospace' }}>{user.public_flags}</div>
+                    <div style={{ color: '#fff', fontFamily: 'monospace', display: 'flex', alignItems: 'center', gap: 8 }}>
+                      {user.public_flags}
+                      {user.public_flags > 0 && (
+                        <span style={{ fontSize: '0.75rem', backgroundColor: '#1e1f22', padding: '2px 6px', borderRadius: '4px', color: '#B5BAC1' }}>
+                          {getBadges(user).filter(b => b.name !== 'Nitro').length} Badges
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
 
