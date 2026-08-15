@@ -112,7 +112,22 @@ export function OAuthVisualizer() {
         for (const key in flag_map) {
           if (flag_map[key as keyof typeof flag_map].bit === (1 << bitOffset)) {
             // Only push if the user doesn't already have a profile_badge for this (to avoid duplicates)
-            const hasProfileBadge = u.profile_badges?.some((pb: any) => pb.id.toLowerCase().includes(key));
+            const pbIdMatch = ({
+              staff: 'staff',
+              partner: 'partner',
+              hypesquad: 'hypesquad_events',
+              bug_hunter_1: 'bug_hunter_level_1',
+              bravery: 'hypesquad_house_1',
+              brilliance: 'hypesquad_house_2',
+              balance: 'hypesquad_house_3',
+              early_supporter: 'early_supporter',
+              bug_hunter_2: 'bug_hunter_level_2',
+              verified_bot_dev: 'early_verified_bot_developer',
+              mod_alumni: 'discord_certified_moderator',
+              active_dev: 'active_developer'
+            } as Record<string, string>)[key] || key;
+            
+            const hasProfileBadge = u.profile_badges?.some((pb: any) => pb.id.toLowerCase() === pbIdMatch);
             if (!hasProfileBadge) {
               badges.push(flag_map[key as keyof typeof flag_map]);
             }
