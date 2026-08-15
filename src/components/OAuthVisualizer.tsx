@@ -31,7 +31,8 @@ export function OAuthVisualizer() {
     flag_names: botUser?.flag_names || [],
     status: botUser?.status || 'offline',
     custom_status: botUser?.custom_status || null,
-    bot_badges: botUser?.badges || []
+    bot_badges: botUser?.badges || [],
+    profile_badges: botUser?.profile_badges || []
   } : null;
 
   if (stateError) return <div>Failed to load data</div>;
@@ -83,7 +84,10 @@ export function OAuthVisualizer() {
   const getBadges = (u: any) => {
     const badges = [];
     
-    if (u.premium_type > 0) badges.push({ name: 'Nitro', src: 'https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/discord-nitro.svg' });
+    // Fallback nitro badge if needed, but profile_badges usually has the tenure badge
+    if (u.premium_type > 0 && !u.profile_badges?.some((b: any) => b.id.includes('premium'))) {
+      badges.push({ name: 'Nitro', src: 'https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/discord-nitro.svg' });
+    }
     
     const flag_map = {
       staff: { bit: 1 << 0, name: 'Staff', src: 'https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/discord-staff.svg' },
@@ -107,7 +111,12 @@ export function OAuthVisualizer() {
       if ((flags & 1) === 1) {
         for (const key in flag_map) {
           if (flag_map[key as keyof typeof flag_map].bit === (1 << bitOffset)) {
-            badges.push(flag_map[key as keyof typeof flag_map]);
+            // Only push if the user doesn't already have a profile_badge for this (to avoid duplicates)
+            const mappedName = flag_map[key as keyof typeof flag_map].name.toLowerCase();
+            const hasProfileBadge = u.profile_badges?.some((pb: any) => pb.id.toLowerCase().includes(key));
+            if (!hasProfileBadge) {
+              badges.push(flag_map[key as keyof typeof flag_map]);
+            }
             break;
           }
         }
@@ -120,10 +129,17 @@ export function OAuthVisualizer() {
     if (fn.includes('used_desktop_client')) badges.push({ name: 'Desktop Client', icon: <Monitor size={14} />, color: '#E67E22', bg: '#E67E2222' });
     if (fn.includes('used_web_client')) badges.push({ name: 'Web Client', icon: <Globe size={14} />, color: '#E67E22', bg: '#E67E2222' });
     if (fn.includes('used_mobile_client')) badges.push({ name: 'Mobile Client', icon: <Smartphone size={14} />, color: '#2ECC71', bg: '#2ECC7122' });
-    if (fn.includes('premium_promo_dismissed')) badges.push({ name: 'Vencord', icon: <div style={{width: 14, height: 14, borderRadius: '50%', background: 'conic-gradient(from 180deg at 50% 50%, #e67e22 0deg, #f39c12 180deg, #e67e22 360deg)'}}/>, color: '#E67E22', bg: '#E67E2222' });
-    if (fn.includes('premium_discriminator')) badges.push({ name: 'Donator', icon: <div style={{width: 0, height: 0, borderLeft: '7px solid transparent', borderRight: '7px solid transparent', borderBottom: '14px solid #E91E63'}}/>, color: '#E91E63', bg: '#E91E6322' });
-    if (fn.includes('has_session_started')) badges.push({ name: 'Aliucord', icon: <Leaf size={14} fill="#2ecc71" stroke="#2ecc71" />, color: '#2ECC71', bg: '#2ECC7122' });
     if (fn.includes('spammer')) badges.push({ name: 'Spammer', icon: <CircleSlash size={14} />, color: '#ED4245', bg: '#ED424522' });
+    
+    // Add all official profile badges dynamically
+    if (u.profile_badges) {
+      for (const pb of u.profile_badges) {
+        badges.push({
+          name: pb.description || pb.id,
+          src: `https://cdn.discordapp.com/badge-icons/${pb.icon}.png`
+        });
+      }
+    }
     
     return badges;
   };
@@ -236,12 +252,8 @@ export function OAuthVisualizer() {
                       </div>
                     ))}
                     {user.bot_badges?.map((badgeStr: string, i: number) => {
-                       if (badgeStr.includes('hypesquad') || badgeStr.includes('staff') || badgeStr.includes('partner') || badgeStr.includes('bug_hunter') || badgeStr.includes('active-developer') || badgeStr.includes('premium')) return null;
-                       return (
-                         <div key={`bot-${i}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '22px', height: '22px' }}>
-                           <img src={`https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/${badgeStr}`} alt="Bot Badge" style={{ width: '22px', height: '22px', objectFit: 'contain' }} onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-                         </div>
-                       )
+                       // Skip official ones since we now parse profile_badges dynamically
+                       return null;
                     })}
                   </div>
                 </div>
