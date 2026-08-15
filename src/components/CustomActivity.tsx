@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Play, Plus, Tv, Film, Loader2 } from 'lucide-react';
+import { Search, Play, Plus, Tv, Film, Loader2, Pause, Square, SkipBack, SkipForward, Clock } from 'lucide-react';
 import useSWR from 'swr';
 
 const TMDB_READ_KEY = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwZWVmZTk2MjU5MTYxYTZjZDU5NDUzOWIxMjY0NGJmZSIsIm5iZiI6MTc4NjgzNTgxNy4xNDMwMDAxLCJzdWIiOiI2YTgwZjM2OTFlYWZiNzNiMDI3MmIyYjkiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.lhAgYUW8_dJUdHE1E8pC3Fddj9mbao0SpzXuR4STCo4";
@@ -11,6 +11,12 @@ const tmdbFetcher = async (url: string) => {
 }
 
 export function CustomActivity() {
+  const { data: stateData } = useSWR('/api/state', url => fetch(url).then(r => r.json()), { refreshInterval: 2000 });
+  const getVal = (k: string) => {
+    const item = stateData?.find((s: any) => s.key === k);
+    return item ? JSON.parse(item.value) : null;
+  };
+
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [tvSelections, setTvSelections] = useState<Record<number, {season: number, episode: number}>>({});
@@ -19,6 +25,24 @@ export function CustomActivity() {
     const timer = setTimeout(() => setDebouncedQuery(query), 500);
     return () => clearTimeout(timer);
   }, [query]);
+
+  // Read player state
+  const playerState = getVal('bot_activity_player');
+
+  // Progress Bar ticker
+  const [progress, setProgress] = useState(0);
+  useEffect(() => {
+    if (!playerState || !playerState.playing) {
+      if (playerState?.paused_at) {
+        setProgress(Math.max(0, playerState.paused_at - playerState.start_time));
+      }
+      return;
+    }
+    const interval = setInterval(() => {
+      setProgress(Math.max(0, (Date.now() / 1000) - playerState.start_time));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [playerState]);
 
   const { data: searchResults, isValidating } = useSWR(
     debouncedQuery ? `https://api.themoviedb.org/3/search/multi?query=${encodeURIComponent(debouncedQuery)}&include_adult=false&language=en-US&page=1` : null,
@@ -37,10 +61,29 @@ export function CustomActivity() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ command: { type: 'shell', text: cmdText, id: Date.now().toString() } })
       });
-      alert(`Queued command to ${action} ${item.name || item.title}`);
     } catch {
-      alert("Failed to queue command.");
+      // ignore
     }
+  };
+
+  const dispatchCommand = async (text: string) => {
+    try {
+      await fetch('/api/queue-command', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: { type: 'shell', text, id: Date.now().toString() } })
+      });
+    } catch {
+      // ignore
+    }
+  };
+
+  const formatTime = (seconds: number) => {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = Math.floor(seconds % 60);
+    if (h > 0) return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    return `${m}:${s.toString().padStart(2, '0')}`;
   };
 
   return (
@@ -124,6 +167,42 @@ export function CustomActivity() {
           </div>
         )}
       </div>
+
+      {playerState && playerState.media && (
+        <div style={{ position: 'sticky', bottom: '0', backgroundColor: '#1E1F22', borderTop: '1px solid #333', padding: '16px', borderRadius: '8px 8px 0 0', display: 'flex', alignItems: 'center', gap: '20px', boxShadow: '0 -4px 10px rgba(0,0,0,0.5)', zIndex: 10 }}>
+          {playerState.media.poster && (
+            <img src={playerState.media.poster} alt="Poster" style={{ height: '80px', borderRadius: '4px', aspectRatio: '2/3', objectFit: 'cover' }} />
+          )}
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={{ fontWeight: 'bold', fontSize: '1.1rem', color: '#fff' }}>
+              {playerState.media.type === 'movie' ? playerState.media.title : `${playerState.media.show_title} (S${playerState.media.season.toString().padStart(2, '0')}E${playerState.media.episode.toString().padStart(2, '0')})`}
+            </div>
+            
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <span style={{ fontSize: '0.8rem', color: '#aaa', minWidth: '45px', textAlign: 'right' }}>{formatTime(progress)}</span>
+              <div style={{ flex: 1, height: '6px', backgroundColor: '#333', borderRadius: '3px', overflow: 'hidden', position: 'relative' }}>
+                <div style={{ position: 'absolute', top: 0, left: 0, height: '100%', backgroundColor: '#5865F2', width: `${Math.min(100, (progress / (playerState.duration || 1)) * 100)}%`, transition: 'width 1s linear' }} />
+              </div>
+              <span style={{ fontSize: '0.8rem', color: '#aaa', minWidth: '45px' }}>{formatTime(playerState.duration)}</span>
+            </div>
+          </div>
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <button onClick={() => dispatchCommand(`.activity seek ${Math.max(0, playerState.duration - progress + 10)}`)} style={{ background: 'transparent', border: 'none', color: '#ccc', cursor: 'pointer', padding: '8px' }} title="Rewind 10s">
+              <SkipBack size={20} />
+            </button>
+            <button onClick={() => dispatchCommand(playerState.playing ? '.activity pause' : '.activity resume')} style={{ background: '#5865F2', border: 'none', color: '#fff', cursor: 'pointer', padding: '12px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              {playerState.playing ? <Pause size={24} /> : <Play size={24} style={{ marginLeft: '4px' }} />}
+            </button>
+            <button onClick={() => dispatchCommand(`.activity seek ${Math.max(0, playerState.duration - progress - 10)}`)} style={{ background: 'transparent', border: 'none', color: '#ccc', cursor: 'pointer', padding: '8px' }} title="Forward 10s">
+              <SkipForward size={20} />
+            </button>
+            <button onClick={() => dispatchCommand('.activity stop')} style={{ background: 'transparent', border: 'none', color: '#E91E63', cursor: 'pointer', padding: '8px', marginLeft: '8px' }} title="Stop">
+              <Square size={20} />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
