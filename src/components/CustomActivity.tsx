@@ -13,6 +13,7 @@ const tmdbFetcher = async (url: string) => {
 export function CustomActivity() {
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
+  const [tvSelections, setTvSelections] = useState<Record<number, {season: number, episode: number}>>({});
   
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedQuery(query), 500);
@@ -27,8 +28,9 @@ export function CustomActivity() {
   const results = searchResults?.results?.filter((r: any) => r.media_type === 'movie' || r.media_type === 'tv') || [];
 
   const handleAction = async (action: 'play' | 'queue', item: any) => {
-    // For tv shows, default to S1E1 if playing immediately
-    const cmdText = `.activity ${action} ${item.media_type} ${item.id}` + (item.media_type === 'tv' ? ' 1 1' : '');
+    const season = tvSelections[item.id]?.season || 1;
+    const episode = tvSelections[item.id]?.episode || 1;
+    const cmdText = `.activity ${action} ${item.media_type} ${item.id}` + (item.media_type === 'tv' ? ` ${season} ${episode}` : '');
     try {
       await fetch('/api/queue-command', {
         method: 'POST',
@@ -80,6 +82,30 @@ export function CustomActivity() {
                     {item.media_type}
                   </span>
                 </div>
+                {item.media_type === 'tv' && (
+                  <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+                    <label style={{ fontSize: '0.75rem', color: '#ccc', flex: 1 }}>
+                      Season
+                      <input 
+                        type="number" 
+                        min="1" 
+                        value={tvSelections[item.id]?.season || 1}
+                        onChange={(e) => setTvSelections({...tvSelections, [item.id]: {...(tvSelections[item.id] || {episode: 1}), season: parseInt(e.target.value) || 1}})}
+                        style={{ width: '100%', marginTop: '4px', padding: '4px', borderRadius: '4px', backgroundColor: '#1E1F22', border: '1px solid #333', color: '#fff', boxSizing: 'border-box' }}
+                      />
+                    </label>
+                    <label style={{ fontSize: '0.75rem', color: '#ccc', flex: 1 }}>
+                      Episode
+                      <input 
+                        type="number" 
+                        min="1" 
+                        value={tvSelections[item.id]?.episode || 1}
+                        onChange={(e) => setTvSelections({...tvSelections, [item.id]: {...(tvSelections[item.id] || {season: 1}), episode: parseInt(e.target.value) || 1}})}
+                        style={{ width: '100%', marginTop: '4px', padding: '4px', borderRadius: '4px', backgroundColor: '#1E1F22', border: '1px solid #333', color: '#fff', boxSizing: 'border-box' }}
+                      />
+                    </label>
+                  </div>
+                )}
                 <div style={{ marginTop: 'auto', display: 'flex', gap: '8px' }}>
                   <button onClick={() => handleAction('play', item)} className="btn-primary" style={{ flex: 1, padding: '6px', justifyContent: 'center' }}>
                     <Play size={14} /> Play
