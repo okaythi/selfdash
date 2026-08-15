@@ -79,12 +79,21 @@ export function OAuthVisualizer() {
     
     if (u.premium_type > 0) badges.push({ name: 'Nitro', src: 'https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/discord-nitro.svg' });
     
-    const knownFlags = [
-      { bit: 1 << 0, name: 'Staff', src: 'https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/discord-staff.svg' },
-      { bit: 1 << 1, name: 'Partner', src: 'https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/discord-partner.svg' },
-      { bit: 1 << 2, name: 'HypeSquad Events', src: 'https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/hype-squad-events.svg' },
-      { bit: 1 << 3, name: 'Bug Hunter Lvl 1', src: 'https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/discord-bug-hunter-green.svg' },
-      { bit: 1 << 6, name: 'House Bravery', src: 'https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/hype-squad-bravery.svg' },
+    const flag_map = {
+      staff: { bit: 1 << 0, name: 'Staff', src: 'https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/discord-staff.svg' },
+      partner: { bit: 1 << 1, name: 'Partner', src: 'https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/discord-partner.svg' },
+      hypesquad: { bit: 1 << 2, name: 'HypeSquad Events', src: 'https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/hype-squad-events.svg' },
+      bug_hunter_1: { bit: 1 << 3, name: 'Bug Hunter Lvl 1', src: 'https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/discord-bug-hunter-green.svg' },
+      bravery: { bit: 1 << 6, name: 'House Bravery', src: 'https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/hype-squad-bravery.svg' },
+      brilliance: { bit: 1 << 7, name: 'House Brilliance', src: 'https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/hype-squad-brilliance.svg' },
+      balance: { bit: 1 << 8, name: 'House Balance', src: 'https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/hype-squad-balance.svg' },
+      early_supporter: { bit: 1 << 9, name: 'Early Supporter', src: 'https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/discord-early-supporter.svg' },
+      bug_hunter_2: { bit: 1 << 14, name: 'Bug Hunter Lvl 2', src: 'https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/discord-bug-hunter-gold.svg' },
+      verified_bot_dev: { bit: 1 << 17, name: 'Verified Developer', src: 'https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/early-verified-bot-developer.svg' },
+      mod_alumni: { bit: 1 << 18, name: 'Moderator Programs Alumni', src: 'https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/discord-mod.svg' },
+      active_dev: { bit: 1 << 22, name: 'Active Developer', src: 'https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/active-developer.svg' }
+    };
+
     let flags = u.public_flags || 0;
     
     let bitOffset = 0;
