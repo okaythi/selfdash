@@ -120,12 +120,12 @@ export function ProfileEditor() {
         <h2 style={{ marginBottom: '20px' }}>Live Preview</h2>
         <div className="discord-replica-container" style={{ overflow: 'hidden' }}>
           <ImageUploader 
+            type="banner"
             currentUrl={profile.bannerUrl}
             onUploadStart={() => {}}
             onUploadSuccess={(url) => setProfile({...profile, bannerUrl: url})}
             onUploadError={(err) => alert(err)}
             onRemove={() => setProfile({...profile, bannerUrl: ''})}
-            shape="rect"
           >
             <div 
               className="discord-profile-banner" 
@@ -142,12 +142,12 @@ export function ProfileEditor() {
           
           <div className="discord-profile-avatar-wrapper" style={{ position: 'relative', marginTop: '-40px', marginLeft: '16px', width: '80px', height: '80px', zIndex: 5 }}>
             <ImageUploader
+              type="avatar"
               currentUrl={profile.avatarUrl}
               onUploadStart={() => {}}
               onUploadSuccess={(url) => setProfile({...profile, avatarUrl: url})}
               onUploadError={(err) => alert(err)}
               onRemove={() => setProfile({...profile, avatarUrl: 'https://cdn.discordapp.com/embed/avatars/0.png'})}
-              shape="circle"
             >
               <img 
                 src={profile.avatarUrl} 
