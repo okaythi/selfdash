@@ -1,5 +1,4 @@
 import useSWR from 'swr';
-import ReactJson from 'react-json-view';
 
 const fetcher = (url: string) => fetch(url).then(r => r.json());
 
@@ -52,14 +51,9 @@ export function OAuthVisualizer() {
             <h3 style={{ marginBottom: '15px', color: '#5865F2' }}>identify (User Profile)</h3>
             <div style={{ backgroundColor: '#1e1e24', padding: '15px', borderRadius: '8px', overflowX: 'auto' }}>
               {oauthUserData ? (
-                <ReactJson 
-                  src={oauthUserData} 
-                  theme="twilight" 
-                  displayDataTypes={false} 
-                  displayObjectSize={false} 
-                  enableClipboard={false}
-                  collapsed={false}
-                />
+                <pre style={{ margin: 0, color: '#e2e8f0', fontFamily: 'monospace', fontSize: '13px', whiteSpace: 'pre-wrap' }}>
+                  {JSON.stringify(oauthUserData, null, 2)}
+                </pre>
               ) : <span style={{ color: '#aaa' }}>No identify data</span>}
             </div>
           </div>
@@ -68,14 +62,9 @@ export function OAuthVisualizer() {
             <h3 style={{ marginBottom: '15px', color: '#5865F2' }}>connections</h3>
             <div style={{ backgroundColor: '#1e1e24', padding: '15px', borderRadius: '8px', overflowX: 'auto' }}>
               {oauthConnections ? (
-                <ReactJson 
-                  src={oauthConnections} 
-                  theme="twilight" 
-                  displayDataTypes={false} 
-                  displayObjectSize={false} 
-                  enableClipboard={false}
-                  collapsed={1}
-                />
+                <pre style={{ margin: 0, color: '#e2e8f0', fontFamily: 'monospace', fontSize: '13px', whiteSpace: 'pre-wrap' }}>
+                  {JSON.stringify(oauthConnections, null, 2)}
+                </pre>
               ) : <span style={{ color: '#aaa' }}>No connections data</span>}
             </div>
           </div>
@@ -84,14 +73,9 @@ export function OAuthVisualizer() {
             <h3 style={{ marginBottom: '15px', color: '#5865F2' }}>guilds</h3>
             <div style={{ backgroundColor: '#1e1e24', padding: '15px', borderRadius: '8px', overflowX: 'auto' }}>
               {oauthGuilds ? (
-                <ReactJson 
-                  src={oauthGuilds} 
-                  theme="twilight" 
-                  displayDataTypes={false} 
-                  displayObjectSize={false} 
-                  enableClipboard={false}
-                  collapsed={1}
-                />
+                <pre style={{ margin: 0, color: '#e2e8f0', fontFamily: 'monospace', fontSize: '13px', whiteSpace: 'pre-wrap', maxHeight: '400px', overflowY: 'auto' }}>
+                  {JSON.stringify(oauthGuilds, null, 2)}
+                </pre>
               ) : <span style={{ color: '#aaa' }}>No guilds data</span>}
             </div>
           </div>
