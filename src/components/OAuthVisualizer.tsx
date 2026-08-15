@@ -61,20 +61,41 @@ export function OAuthVisualizer() {
 
   const getBadges = (u: any) => {
     const badges = [];
-    const flags = u.public_flags || 0;
+    let flags = u.public_flags || 0;
     
     if (u.premium_type > 0) badges.push({ name: 'Nitro', icon: <BadgeCheck size={18} />, color: '#ff73fa', bg: '#ff73fa22' });
-    if (flags & (1 << 0)) badges.push({ name: 'Staff', icon: <Wrench size={18} />, color: '#5865F2', bg: '#5865F222' });
-    if (flags & (1 << 1)) badges.push({ name: 'Partner', icon: <Handshake size={18} />, color: '#5865F2', bg: '#5865F222' });
-    if (flags & (1 << 2)) badges.push({ name: 'HypeSquad', icon: <Zap size={18} />, color: '#FEE75C', bg: '#FEE75C22' });
-    if (flags & (1 << 3) || flags & (1 << 14)) badges.push({ name: 'Bug Hunter', icon: <Bug size={18} />, color: '#5865F2', bg: '#5865F222' });
-    if (flags & (1 << 6)) badges.push({ name: 'Bravery', icon: <Swords size={18} />, color: '#9b59b6', bg: '#9b59b622' });
-    if (flags & (1 << 7)) badges.push({ name: 'Brilliance', icon: <Sparkles size={18} />, color: '#F23F42', bg: '#F23F4222' });
-    if (flags & (1 << 8)) badges.push({ name: 'Balance', icon: <Scale size={18} />, color: '#23A559', bg: '#23A55922' });
-    if (flags & (1 << 9)) badges.push({ name: 'Early Supporter', icon: <Crown size={18} />, color: '#F1C40F', bg: '#F1C40F22' });
-    if (flags & (1 << 17)) badges.push({ name: 'Early Bot Dev', icon: <TerminalSquare size={18} />, color: '#fff', bg: '#ffffff22' });
-    if (flags & (1 << 18)) badges.push({ name: 'Moderator Alumni', icon: <ShieldCheck size={18} />, color: '#5865F2', bg: '#5865F222' });
-    if (flags & (1 << 22)) badges.push({ name: 'Active Developer', icon: <Code size={18} />, color: '#fff', bg: '#ffffff22' });
+    
+    const knownFlags = [
+      { bit: 1 << 0, name: 'Staff', icon: <Wrench size={18} />, color: '#5865F2', bg: '#5865F222' },
+      { bit: 1 << 1, name: 'Partner', icon: <Handshake size={18} />, color: '#5865F2', bg: '#5865F222' },
+      { bit: 1 << 2, name: 'HypeSquad', icon: <Zap size={18} />, color: '#FEE75C', bg: '#FEE75C22' },
+      { bit: 1 << 3, name: 'Bug Hunter', icon: <Bug size={18} />, color: '#5865F2', bg: '#5865F222' },
+      { bit: 1 << 6, name: 'Bravery', icon: <Swords size={18} />, color: '#9b59b6', bg: '#9b59b622' },
+      { bit: 1 << 7, name: 'Brilliance', icon: <Sparkles size={18} />, color: '#F23F42', bg: '#F23F4222' },
+      { bit: 1 << 8, name: 'Balance', icon: <Scale size={18} />, color: '#23A559', bg: '#23A55922' },
+      { bit: 1 << 9, name: 'Early Supporter', icon: <Crown size={18} />, color: '#F1C40F', bg: '#F1C40F22' },
+      { bit: 1 << 14, name: 'Bug Hunter Lvl 2', icon: <Bug size={18} />, color: '#5865F2', bg: '#5865F222' },
+      { bit: 1 << 17, name: 'Early Bot Dev', icon: <TerminalSquare size={18} />, color: '#fff', bg: '#ffffff22' },
+      { bit: 1 << 18, name: 'Moderator Alumni', icon: <ShieldCheck size={18} />, color: '#5865F2', bg: '#5865F222' },
+      { bit: 1 << 22, name: 'Active Developer', icon: <Code size={18} />, color: '#fff', bg: '#ffffff22' }
+    ];
+
+    knownFlags.forEach(f => {
+      if ((flags & f.bit) === f.bit) {
+        badges.push(f);
+        flags &= ~f.bit; // remove the flag
+      }
+    });
+
+    // Handle any newly added flags from 2025/2026
+    let bitOffset = 0;
+    while (flags > 0) {
+      if ((flags & 1) === 1) {
+        badges.push({ name: `Unknown Badge (Bit ${bitOffset})`, icon: <CircleSlash size={18} />, color: '#ED4245', bg: '#ED424522' });
+      }
+      flags >>= 1;
+      bitOffset++;
+    }
   
     return badges;
   };
