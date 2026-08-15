@@ -1,5 +1,5 @@
 import useSWR from 'swr';
-import { Server, ShieldCheck, Mail, Link as LinkIcon, BadgeCheck, CircleSlash, Key, Monitor, Swords, Sparkles, Scale, Crown, Bug, Wrench, Handshake, Zap, Code, TerminalSquare } from 'lucide-react';
+import { Server, ShieldCheck, Mail, Link as LinkIcon, CircleSlash, Key, Monitor } from 'lucide-react';
 
 const fetcher = (url: string) => fetch(url).then(r => r.json());
 
@@ -63,35 +63,34 @@ export function OAuthVisualizer() {
     const badges = [];
     let flags = u.public_flags || 0;
     
-    if (u.premium_type > 0) badges.push({ name: 'Nitro', icon: <BadgeCheck size={18} />, color: '#ff73fa', bg: '#ff73fa22' });
+    if (u.premium_type > 0) badges.push({ name: 'Nitro', src: 'https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/discord-nitro.svg' });
     
     const knownFlags = [
-      { bit: 1 << 0, name: 'Staff', icon: <Wrench size={18} />, color: '#5865F2', bg: '#5865F222' },
-      { bit: 1 << 1, name: 'Partner', icon: <Handshake size={18} />, color: '#5865F2', bg: '#5865F222' },
-      { bit: 1 << 2, name: 'HypeSquad', icon: <Zap size={18} />, color: '#FEE75C', bg: '#FEE75C22' },
-      { bit: 1 << 3, name: 'Bug Hunter', icon: <Bug size={18} />, color: '#5865F2', bg: '#5865F222' },
-      { bit: 1 << 6, name: 'Bravery', icon: <Swords size={18} />, color: '#9b59b6', bg: '#9b59b622' },
-      { bit: 1 << 7, name: 'Brilliance', icon: <Sparkles size={18} />, color: '#F23F42', bg: '#F23F4222' },
-      { bit: 1 << 8, name: 'Balance', icon: <Scale size={18} />, color: '#23A559', bg: '#23A55922' },
-      { bit: 1 << 9, name: 'Early Supporter', icon: <Crown size={18} />, color: '#F1C40F', bg: '#F1C40F22' },
-      { bit: 1 << 14, name: 'Bug Hunter Lvl 2', icon: <Bug size={18} />, color: '#5865F2', bg: '#5865F222' },
-      { bit: 1 << 17, name: 'Early Bot Dev', icon: <TerminalSquare size={18} />, color: '#fff', bg: '#ffffff22' },
-      { bit: 1 << 18, name: 'Moderator Alumni', icon: <ShieldCheck size={18} />, color: '#5865F2', bg: '#5865F222' },
-      { bit: 1 << 22, name: 'Active Developer', icon: <Code size={18} />, color: '#fff', bg: '#ffffff22' }
+      { bit: 1 << 0, name: 'Staff', src: 'https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/discord-staff.svg' },
+      { bit: 1 << 1, name: 'Partner', src: 'https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/discord-partner.svg' },
+      { bit: 1 << 2, name: 'HypeSquad Events', src: 'https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/hype-squad-events.svg' },
+      { bit: 1 << 3, name: 'Bug Hunter Lvl 1', src: 'https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/discord-bug-hunter-green.svg' },
+      { bit: 1 << 6, name: 'House Bravery', src: 'https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/hype-squad-bravery.svg' },
+      { bit: 1 << 7, name: 'House Brilliance', src: 'https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/hype-squad-brilliance.svg' },
+      { bit: 1 << 8, name: 'House Balance', src: 'https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/hype-squad-balance.svg' },
+      { bit: 1 << 9, name: 'Early Supporter', src: 'https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/discord-early-supporter.svg' },
+      { bit: 1 << 14, name: 'Bug Hunter Lvl 2', src: 'https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/discord-bug-hunter-gold.svg' },
+      { bit: 1 << 17, name: 'Early Verified Bot Dev', src: 'https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/discord-bot-dev.svg' },
+      { bit: 1 << 18, name: 'Moderator Programs Alumni', src: 'https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/discord-mod.svg' },
+      { bit: 1 << 22, name: 'Active Developer', src: 'https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/active-developer.svg' }
     ];
 
     knownFlags.forEach(f => {
       if ((flags & f.bit) === f.bit) {
         badges.push(f);
-        flags &= ~f.bit; // remove the flag
+        flags &= ~f.bit;
       }
     });
 
-    // Handle any newly added flags from 2025/2026
     let bitOffset = 0;
     while (flags > 0) {
       if ((flags & 1) === 1) {
-        badges.push({ name: `Unknown Badge (Bit ${bitOffset})`, icon: <CircleSlash size={18} />, color: '#ED4245', bg: '#ED424522' });
+        badges.push({ name: `Unknown Flag (Bit ${bitOffset})`, icon: <CircleSlash size={18} />, color: '#ED4245', bg: '#ED424522' });
       }
       flags >>= 1;
       bitOffset++;
@@ -146,8 +145,14 @@ export function OAuthVisualizer() {
                   
                   <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'flex-end', maxWidth: '50%' }}>
                     {getBadges(user).map((b, i) => (
-                      <div key={i} title={b.name} style={{ backgroundColor: b.bg, padding: '6px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: b.color, border: `1px solid ${b.color}55`, width: '32px', height: '32px' }}>
-                        {b.icon}
+                      <div key={i} title={b.name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '28px', height: '28px' }}>
+                        {b.src ? (
+                          <img src={b.src} alt={b.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                        ) : (
+                          <div style={{ backgroundColor: b.bg, padding: '6px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: b.color, border: `1px solid ${b.color}55`, width: '100%', height: '100%' }}>
+                            {b.icon}
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
