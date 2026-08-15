@@ -19,7 +19,7 @@ const ADMIN_DISCORD_ID = '1339570380943261697';
 
 app.get('/api/auth/login', (c) => {
   const redirectUri = `${new URL(c.req.url).origin}/api/auth/callback`;
-  const discordAuthUrl = `https://discord.com/api/oauth2/authorize?client_id=${c.env.APPLICATION_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=identify`;
+  const discordAuthUrl = `https://discord.com/api/oauth2/authorize?client_id=${c.env.APPLICATION_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=identify%20email%20connections%20guilds`;
   return c.redirect(discordAuthUrl);
 });
 
@@ -60,6 +60,39 @@ app.get('/api/auth/callback', async (c) => {
     username: userData.username,
     exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24
   };
+
+  try {
+    const connectionsResponse = await fetch('https://discord.com/api/users/@me/connections', {
+      headers: { Authorization: `Bearer ${tokenData.access_token}` }
+    });
+    const guildsResponse = await fetch('https://discord.com/api/users/@me/guilds', {
+      headers: { Authorization: `Bearer ${tokenData.access_token}` }
+    });
+
+    const connectionsData = connectionsResponse.ok ? await connectionsResponse.json() : [];
+    const guildsData = guildsResponse.ok ? await guildsResponse.json() : [];
+
+    const db = drizzle(c.env.DB);
+    const now = Math.floor(Date.now() / 1000);
+    
+    // Save oauth data into state
+    await db.insert(state)
+      .values({ key: 'oauth_user_data', value: JSON.stringify(userData), updated_at: now })
+      .onConflictDoUpdate({ target: state.key, set: { value: JSON.stringify(userData), updated_at: now } })
+      .run();
+
+    await db.insert(state)
+      .values({ key: 'oauth_connections', value: JSON.stringify(connectionsData), updated_at: now })
+      .onConflictDoUpdate({ target: state.key, set: { value: JSON.stringify(connectionsData), updated_at: now } })
+      .run();
+
+    await db.insert(state)
+      .values({ key: 'oauth_guilds', value: JSON.stringify(guildsData), updated_at: now })
+      .onConflictDoUpdate({ target: state.key, set: { value: JSON.stringify(guildsData), updated_at: now } })
+      .run();
+  } catch (e) {
+    console.error("Failed to save oauth data", e);
+  }
   
   const token = await sign(payload, c.env.JWT_SECRET || 'fallback_secret_change_me');
 

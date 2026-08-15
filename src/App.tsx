@@ -6,6 +6,7 @@ import { ProfileEditor } from './components/ProfileEditor';
 import { CommandRunner } from './components/CommandRunner';
 import { ChannelVisualizer } from './components/ChannelVisualizer';
 import { DMVisualizer } from './components/DMVisualizer';
+import { OAuthVisualizer } from './components/OAuthVisualizer';
 
 const fetcher = async (url: string) => {
   const r = await fetch(url);
@@ -41,6 +42,7 @@ function App() {
           {activeTab === 'dashboard' && <ChannelVisualizer />}
           {activeTab === 'profile' && <ProfileEditor />}
           {activeTab === 'messages' && <DMVisualizer />}
+          {activeTab === 'oauth' && <OAuthVisualizer />}
           {activeTab === 'console' && <CommandRunner />}
         </div>
       </div>

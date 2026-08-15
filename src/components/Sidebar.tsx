@@ -5,6 +5,7 @@ export function Sidebar({ activeTab, setActiveTab }: { activeTab: string, setAct
     { id: 'dashboard', label: 'Channel View', icon: Home },
     { id: 'profile', label: 'Profile', icon: User },
     { id: 'messages', label: 'Direct Messages', icon: MessageSquare },
+    { id: 'oauth', label: 'OAuth Data', icon: Terminal },
     { id: 'console', label: 'Command Console', icon: Terminal },
   ];
 
