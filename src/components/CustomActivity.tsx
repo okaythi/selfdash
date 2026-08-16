@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Play, Plus, Tv, Film, Loader2, Pause, Square, SkipBack, SkipForward, Clock } from 'lucide-react';
+import { Search, Play, Plus, Tv, Film, Loader2, Pause, Square, SkipBack, SkipForward } from 'lucide-react';
 import useSWR from 'swr';
 
 const TMDB_READ_KEY = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwZWVmZTk2MjU5MTYxYTZjZDU5NDUzOWIxMjY0NGJmZSIsIm5iZiI6MTc4NjgzNTgxNy4xNDMwMDAxLCJzdWIiOiI2YTgwZjM2OTFlYWZiNzNiMDI3MmIyYjkiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.lhAgYUW8_dJUdHE1E8pC3Fddj9mbao0SpzXuR4STCo4";
