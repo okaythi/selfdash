@@ -188,13 +188,13 @@ export function CustomActivity() {
           </div>
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <button onClick={() => dispatchCommand(`.activity seek ${Math.max(0, playerState.duration - progress - 10)}`)} style={{ background: 'transparent', border: '1px solid #444', color: '#ccc', cursor: 'pointer', padding: '8px 12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <button onClick={() => dispatchCommand(`.activity seek ${Math.floor(Math.max(0, progress - 10))}`)} style={{ background: 'transparent', border: '1px solid #444', color: '#ccc', cursor: 'pointer', padding: '8px 12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
               <SkipBack size={16} /> -10s
             </button>
             <button onClick={() => dispatchCommand(playerState.playing ? '.activity pause' : '.activity resume')} style={{ background: '#5865F2', border: 'none', color: '#fff', cursor: 'pointer', padding: '8px 16px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 'bold' }}>
               {playerState.playing ? <><Pause size={18} /> Pause</> : <><Play size={18} /> Resume</>}
             </button>
-            <button onClick={() => dispatchCommand(`.activity seek ${Math.max(0, playerState.duration - progress + 10)}`)} style={{ background: 'transparent', border: '1px solid #444', color: '#ccc', cursor: 'pointer', padding: '8px 12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <button onClick={() => dispatchCommand(`.activity seek ${Math.floor(Math.min(playerState.duration, progress + 10))}`)} style={{ background: 'transparent', border: '1px solid #444', color: '#ccc', cursor: 'pointer', padding: '8px 12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
               <SkipForward size={16} /> +10s
             </button>
             <button onClick={() => dispatchCommand('.activity stop')} style={{ background: 'transparent', border: '1px solid #E91E63', color: '#E91E63', cursor: 'pointer', padding: '8px 16px', marginLeft: '12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 'bold' }}>
